@@ -208,6 +208,8 @@ class _AdminCourierOrdersScreenState extends State<AdminCourierOrdersScreen> wit
     final agentName = data['delivery_agent_name'] ?? '';
     final agentPhone = data['delivery_agent_phone'] ?? '';
     final imageUrl = data['image_url'] ?? '';
+    final List<dynamic> rawImageUrls = data['image_urls'] is List ? (data['image_urls'] as List) : (imageUrl.isNotEmpty ? [imageUrl] : []);
+    final List<String> imageUrls = rawImageUrls.map((e) => e.toString()).toList();
 
     return Card(
       elevation: 2,
@@ -234,26 +236,42 @@ class _AdminCourierOrdersScreenState extends State<AdminCourierOrdersScreen> wit
             ),
             const Divider(height: 24),
 
-            // Package Details Grid (Image, Category, Weight, Instruction)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Package Image Thumbnail
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
+            // Package Photo Gallery (Multiple Images)
+            if (imageUrls.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('📸 Package Photos (${imageUrls.length}):', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.amber)),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 85,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: imageUrls.length,
+                      itemBuilder: (context, idx) {
+                        final img = imageUrls[idx];
+                        return Container(
+                          width: 85,
+                          height: 85,
+                          margin: const EdgeInsets.only(right: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: Colors.amber.shade300, width: 1.5),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: img.startsWith('http')
+                                ? Image.network(img, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.inventory_2, color: Colors.amber))
+                                : Image.asset(img, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.inventory_2, color: Colors.amber)),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: imageUrl.startsWith('http')
-                        ? Image.network(imageUrl, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.inventory_2, size: 40, color: Colors.amber))
-                        : const Icon(Icons.local_shipping_outlined, size: 40, color: Colors.amber),
-                  ),
-                ),
+                  const SizedBox(height: 12),
+                ],
+              ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
