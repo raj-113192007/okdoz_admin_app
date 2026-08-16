@@ -99015,7 +99015,7 @@ if(q!=="All")r.a=s.tw(0,"category",q)
 this.aa(new A.ay7(r,this))},
 RA(a){switch(a){case"Grocery":return B.a6
 case"Pharmacy":return B.aK
-case"Courier":return B.aL
+case"Courier":case"Pickup & Courier":return B.aL
 case"Electronics Service":return B.bJ
 case"RO Service":return B.ml
 case"Restaurant":return B.aB

@@ -40,7 +40,8 @@ class _MerchantsScreenState extends State<MerchantsScreen> {
     switch (category) {
       case 'Grocery': return Colors.green;
       case 'Pharmacy': return Colors.blue;
-      case 'Courier': return Colors.amber;
+      case 'Courier': 
+      case 'Pickup & Courier': return Colors.amber;
       case 'Electronics Service': return Colors.grey;
       case 'RO Service': return Colors.lightBlue;
       case 'Restaurant': return const Color(0xFFFF6D00);
