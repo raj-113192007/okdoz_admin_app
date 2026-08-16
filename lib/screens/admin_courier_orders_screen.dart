@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -261,9 +262,11 @@ class _AdminCourierOrdersScreenState extends State<AdminCourierOrdersScreen> wit
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: img.startsWith('http')
-                                ? Image.network(img, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.inventory_2, color: Colors.amber))
-                                : Image.asset(img, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.inventory_2, color: Colors.amber)),
+                            child: img.startsWith('data:image')
+                                ? Image.memory(base64Decode(img.split(',').last), fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.inventory_2, color: Colors.amber))
+                                : (img.startsWith('http')
+                                    ? Image.network(img, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.inventory_2, color: Colors.amber))
+                                    : Image.asset(img, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.inventory_2, color: Colors.amber))),
                           ),
                         );
                       },
