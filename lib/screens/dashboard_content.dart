@@ -3,7 +3,8 @@ import '../widgets/dashboard_widgets.dart';
 import '../widgets/charts_widget.dart';
 
 class DashboardContent extends StatelessWidget {
-  const DashboardContent({super.key});
+  final Function(int)? onNavigate;
+  const DashboardContent({super.key, this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +13,7 @@ class DashboardContent extends StatelessWidget {
     return Column(
       children: [
         // Top Header
-        const TopHeader(),
+        TopHeader(onNavigate: onNavigate),
         
         // Scrollable Content
         Expanded(
@@ -104,7 +105,7 @@ class DashboardContent extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Category Cards Row
-        const CategoryCardsRow(),
+        CategoryCardsRow(onNavigate: onNavigate),
         const SizedBox(height: 24),
 
         // Charts Row

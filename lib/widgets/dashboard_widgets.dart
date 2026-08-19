@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 class TopHeader extends StatelessWidget {
-  const TopHeader({super.key});
+  final Function(int)? onNavigate;
+  const TopHeader({super.key, this.onNavigate});
 
   void _showCommandPalette(BuildContext context) {
     showDialog(
       context: context,
-      builder: (ctx) => const CommandPaletteDialog(),
+      builder: (ctx) => CommandPaletteDialog(onNavigate: onNavigate),
     );
   }
 
@@ -272,7 +273,8 @@ class TopHeader extends StatelessWidget {
 }
 
 class CommandPaletteDialog extends StatefulWidget {
-  const CommandPaletteDialog({super.key});
+  final Function(int)? onNavigate;
+  const CommandPaletteDialog({super.key, this.onNavigate});
 
   @override
   State<CommandPaletteDialog> createState() => _CommandPaletteDialogState();
@@ -283,24 +285,23 @@ class _CommandPaletteDialogState extends State<CommandPaletteDialog> {
   String _query = '';
 
   final List<Map<String, dynamic>> _allNavItems = const [
-    {'title': 'Dashboard Overview', 'category': 'Page', 'icon': Icons.dashboard_outlined},
-    {'title': 'Pending Merchant Approvals', 'category': 'Approvals', 'icon': Icons.verified_user_outlined},
-    {'title': 'Restaurant Approvals', 'category': 'Approvals', 'icon': Icons.storefront_outlined},
-    {'title': 'Grocery Approvals', 'category': 'Approvals', 'icon': Icons.local_grocery_store_outlined},
-    {'title': 'Pharmacy Approvals', 'category': 'Approvals', 'icon': Icons.local_pharmacy_outlined},
-    {'title': 'Pickup & Courier Approvals', 'category': 'Approvals', 'icon': Icons.local_shipping_outlined},
-    {'title': 'Delivery Partner Approvals', 'category': 'Approvals', 'icon': Icons.two_wheeler_outlined},
-    {'title': 'Technician Approvals', 'category': 'Approvals', 'icon': Icons.build_circle_outlined},
-    {'title': 'Order Management', 'category': 'Management', 'icon': Icons.receipt_long_outlined},
-    {'title': 'All Merchants List', 'category': 'Management', 'icon': Icons.store_mall_directory_outlined},
-    {'title': 'Customer Database', 'category': 'Management', 'icon': Icons.people_outline},
-    {'title': 'Delivery Partners List', 'category': 'Management', 'icon': Icons.badge_outlined},
-    {'title': 'Technicians List', 'category': 'Management', 'icon': Icons.engineering_outlined},
-    {'title': 'Finance Overview', 'category': 'Finance', 'icon': Icons.account_balance_wallet_outlined},
-    {'title': 'Coupons & Discounts', 'category': 'Finance', 'icon': Icons.local_offer_outlined},
-    {'title': 'Promotions & Banners', 'category': 'Marketing', 'icon': Icons.campaign_outlined},
-    {'title': 'Reports & Analytics', 'category': 'Analytics', 'icon': Icons.bar_chart_outlined},
-    {'title': 'Settings & Configurations', 'category': 'System', 'icon': Icons.settings_outlined},
+    {'title': 'Dashboard Overview', 'category': 'Page', 'icon': Icons.dashboard_outlined, 'index': 0},
+    {'title': 'Pending Merchant Approvals', 'category': 'Approvals', 'icon': Icons.verified_user_outlined, 'index': 1},
+    {'title': 'Restaurant Approvals', 'category': 'Approvals', 'icon': Icons.storefront_outlined, 'index': 2},
+    {'title': 'Grocery Approvals', 'category': 'Approvals', 'icon': Icons.local_grocery_store_outlined, 'index': 3},
+    {'title': 'Pharmacy Approvals', 'category': 'Approvals', 'icon': Icons.local_pharmacy_outlined, 'index': 4},
+    {'title': 'Pickup & Courier Approvals', 'category': 'Approvals', 'icon': Icons.local_shipping_outlined, 'index': 5},
+    {'title': 'Electronics Service Approvals', 'category': 'Approvals', 'icon': Icons.electrical_services_outlined, 'index': 6},
+    {'title': 'Delivery Partner Approvals', 'category': 'Approvals', 'icon': Icons.two_wheeler_outlined, 'index': 8},
+    {'title': 'Technician Approvals', 'category': 'Approvals', 'icon': Icons.build_circle_outlined, 'index': 9},
+    {'title': 'Order Management', 'category': 'Management', 'icon': Icons.receipt_long_outlined, 'index': 10},
+    {'title': 'All Merchants List', 'category': 'Management', 'icon': Icons.store_mall_directory_outlined, 'index': 11},
+    {'title': 'Customer Database', 'category': 'Management', 'icon': Icons.people_outline, 'index': 12},
+    {'title': 'Delivery Partners List', 'category': 'Management', 'icon': Icons.badge_outlined, 'index': 13},
+    {'title': 'Technicians List', 'category': 'Management', 'icon': Icons.engineering_outlined, 'index': 14},
+    {'title': 'Finance Overview', 'category': 'Finance', 'icon': Icons.account_balance_wallet_outlined, 'index': 15},
+    {'title': 'Coupons & Discounts', 'category': 'Finance', 'icon': Icons.local_offer_outlined, 'index': 16},
+    {'title': 'Settings & Configurations', 'category': 'System', 'icon': Icons.settings_outlined, 'index': 20},
   ];
 
   @override
@@ -363,6 +364,9 @@ class _CommandPaletteDialogState extends State<CommandPaletteDialog> {
                           trailing: const Icon(Icons.chevron_right, size: 18, color: Colors.grey),
                           onTap: () {
                             Navigator.pop(ctx);
+                            if (item['index'] != null) {
+                              widget.onNavigate?.call(item['index'] as int);
+                            }
                           },
                         );
                       },
@@ -492,7 +496,8 @@ class KpiRow extends StatelessWidget {
 }
 
 class CategoryCardsRow extends StatelessWidget {
-  const CategoryCardsRow({super.key});
+  final Function(int)? onNavigate;
+  const CategoryCardsRow({super.key, this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
@@ -502,99 +507,145 @@ class CategoryCardsRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 190,
-            child: _buildCategoryCard('Restaurant', '0', '₹ 0', Icons.restaurant, Colors.orange),
+            child: _buildCategoryCard(
+              'Restaurant',
+              '0',
+              '₹ 0',
+              Icons.restaurant,
+              Colors.orange,
+              onTap: () => onNavigate?.call(2),
+            ),
           ),
           const SizedBox(width: 12),
           SizedBox(
             width: 190,
-            child: _buildCategoryCard('Grocery', '0', '₹ 0', Icons.local_grocery_store, Colors.green),
+            child: _buildCategoryCard(
+              'Grocery',
+              '0',
+              '₹ 0',
+              Icons.local_grocery_store,
+              Colors.green,
+              onTap: () => onNavigate?.call(3),
+            ),
           ),
           const SizedBox(width: 12),
           SizedBox(
             width: 190,
-            child: _buildCategoryCard('Pharmacy', '0', '₹ 0', Icons.local_pharmacy, Colors.blue),
+            child: _buildCategoryCard(
+              'Pharmacy',
+              '0',
+              '₹ 0',
+              Icons.local_pharmacy,
+              Colors.blue,
+              onTap: () => onNavigate?.call(4),
+            ),
           ),
           const SizedBox(width: 12),
           SizedBox(
             width: 190,
-            child: _buildCategoryCard('Pickup & Courier', '0', '₹ 0', Icons.local_shipping, Colors.amber),
+            child: _buildCategoryCard(
+              'Pickup & Courier',
+              '0',
+              '₹ 0',
+              Icons.local_shipping,
+              Colors.amber,
+              onTap: () => onNavigate?.call(5),
+            ),
           ),
           const SizedBox(width: 12),
           SizedBox(
             width: 190,
-            child: _buildCategoryCard('Electronics', '0', '₹ 0', Icons.electrical_services, Colors.grey.shade700),
+            child: _buildCategoryCard(
+              'Electronics',
+              '0',
+              '₹ 0',
+              Icons.electrical_services,
+              Colors.grey.shade700,
+              onTap: () => onNavigate?.call(6),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryCard(String title, String orders, String revenue, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 20),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+  Widget _buildCategoryCard(
+    String title,
+    String orders,
+    String revenue,
+    IconData icon,
+    Color color, {
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(orders, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
-                    ),
-                    const Text('Orders', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
-                      child: Text(revenue, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
-                    ),
-                    const Text('Revenue', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Center(
-            child: Text(
-              'View Details →',
-              style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(orders, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                      ),
+                      const Text('Orders', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(revenue, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                      ),
+                      const Text('Revenue', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Center(
+              child: Text(
+                'View Details →',
+                style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

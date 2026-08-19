@@ -23,7 +23,14 @@ class _AdminLayoutState extends State<AdminLayout> {
     switch (index) {
       // OVERVIEW
       case 0:
-        return const DashboardContent(key: ValueKey(0));
+        return DashboardContent(
+          key: const ValueKey(0),
+          onNavigate: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+        );
 
       // APPROVALS SECTION (Category-wise)
       case 1:
