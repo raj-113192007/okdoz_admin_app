@@ -112,6 +112,169 @@ class _MerchantsScreenState extends State<MerchantsScreen> {
     }
   }
 
+  void _showQuickPreviewDrawer(
+    BuildContext context,
+    String docId,
+    Map<String, dynamic> data,
+    String category,
+    Color rowColor,
+  ) {
+    final name = data['name'] ?? 'Unknown Name';
+    final email = data['email'] ?? 'N/A';
+    final phone = data['phone'] ?? data['phoneNumber'] ?? 'N/A';
+    final address = data['address'] ?? 'Address not specified';
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'QuickPreview',
+      transitionDuration: const Duration(milliseconds: 250),
+      pageBuilder: (ctx, anim1, anim2) => const SizedBox(),
+      transitionBuilder: (ctx, anim1, anim2, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: 400,
+                height: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(color: Colors.black26, blurRadius: 20, spreadRadius: 5),
+                  ],
+                ),
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Merchant Preview',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 24),
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: rowColor.withValues(alpha: 0.1),
+                          child: Icon(Icons.storefront, color: rowColor, size: 24),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                              const SizedBox(height: 4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: rowColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(category, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: rowColor)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    _detailItem('Email Address', email, Icons.email_outlined),
+                    const SizedBox(height: 14),
+                    _detailItem('Phone Number', phone, Icons.phone_outlined),
+                    const SizedBox(height: 14),
+                    _detailItem('Location', address, Icons.location_on_outlined),
+                    const SizedBox(height: 14),
+                    _detailItem('Status', 'Pending Approval', Icons.hourglass_top_outlined),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MerchantDetailScreen(
+                                    docId: docId,
+                                    merchantData: data,
+                                  ),
+                                ),
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: const Text('Full Profile'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              _approveItem(context, docId, name, category);
+                            },
+                            icon: const Icon(Icons.check_circle, size: 18),
+                            label: const Text('Approve'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _detailItem(String label, String value, IconData icon) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: const Color(0xFF94A3B8)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+              const SizedBox(height: 2),
+              Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF334155))),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -241,15 +404,7 @@ class _MerchantsScreenState extends State<MerchantsScreen> {
 
                                           return InkWell(
                                             onTap: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) => MerchantDetailScreen(
-                                                    docId: docId,
-                                                    merchantData: data,
-                                                  ),
-                                                ),
-                                              );
+                                              _showQuickPreviewDrawer(context, docId, data, category, rowColor);
                                             },
                                             child: Padding(
                                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

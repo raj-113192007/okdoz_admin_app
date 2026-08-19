@@ -17,6 +17,7 @@ class AdminLayout extends StatefulWidget {
 
 class _AdminLayoutState extends State<AdminLayout> {
   int _selectedIndex = 0;
+  bool _isSidebarCollapsed = false;
 
   Widget _getScreenForIndex(int index) {
     switch (index) {
@@ -122,6 +123,8 @@ class _AdminLayoutState extends State<AdminLayout> {
           ? Drawer(
               child: SidebarWidget(
                 selectedIndex: _selectedIndex,
+                isCollapsed: false,
+                onToggleCollapse: () {},
                 onItemSelected: (index) {
                   setState(() {
                     _selectedIndex = index;
@@ -137,6 +140,12 @@ class _AdminLayoutState extends State<AdminLayout> {
           if (!isMobile)
             SidebarWidget(
               selectedIndex: _selectedIndex,
+              isCollapsed: _isSidebarCollapsed,
+              onToggleCollapse: () {
+                setState(() {
+                  _isSidebarCollapsed = !_isSidebarCollapsed;
+                });
+              },
               onItemSelected: (index) {
                 setState(() {
                   _selectedIndex = index;
