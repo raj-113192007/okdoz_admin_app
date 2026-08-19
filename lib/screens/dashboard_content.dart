@@ -121,9 +121,9 @@ class DashboardContent extends StatelessWidget {
             : Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  Expanded(flex: 3, child: SalesChartCard()),
+                  Expanded(flex: 1, child: SalesChartCard()),
                   SizedBox(width: 24),
-                  Expanded(flex: 2, child: SectorChartCard()),
+                  Expanded(flex: 1, child: SectorChartCard()),
                 ],
               ),
         const SizedBox(height: 24),

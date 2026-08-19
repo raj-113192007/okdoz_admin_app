@@ -248,21 +248,21 @@ class SectorChartCard extends StatelessWidget {
                 : Row(
                     children: [
                       Expanded(
-                        flex: 1,
+                        flex: 2,
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
                             PieChart(
                               PieChartData(
                                 sectionsSpace: 0,
-                                centerSpaceRadius: 50,
+                                centerSpaceRadius: 45,
                                 startDegreeOffset: -90,
                                 sections: [
-                                  PieChartSectionData(color: Colors.orange, value: 44, title: '', radius: 30),
-                                  PieChartSectionData(color: Colors.green, value: 24, title: '', radius: 30),
-                                  PieChartSectionData(color: Colors.blue, value: 16, title: '', radius: 30),
-                                  PieChartSectionData(color: Colors.amber, value: 10, title: '', radius: 30),
-                                  PieChartSectionData(color: Colors.grey.shade700, value: 6, title: '', radius: 30),
+                                  PieChartSectionData(color: Colors.orange, value: 44, title: '', radius: 28),
+                                  PieChartSectionData(color: Colors.green, value: 24, title: '', radius: 28),
+                                  PieChartSectionData(color: Colors.blue, value: 16, title: '', radius: 28),
+                                  PieChartSectionData(color: Colors.amber, value: 10, title: '', radius: 28),
+                                  PieChartSectionData(color: Colors.grey.shade700, value: 6, title: '', radius: 28),
                                 ],
                               ),
                             ),
@@ -270,14 +270,15 @@ class SectorChartCard extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: const [
                                 Text('Total Revenue', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
-                                Text('₹ 25,75,430', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                                Text('₹ 25.75L', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
                               ],
                             ),
                           ],
                         ),
                       ),
+                      const SizedBox(width: 12),
                       Expanded(
-                        flex: 1,
+                        flex: 3,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -299,15 +300,33 @@ class SectorChartCard extends StatelessWidget {
 
   Widget _buildSectorLegend(String label, String percentage, String amount, Color color) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.rectangle)),
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2)),
+          ),
           const SizedBox(width: 8),
-          Expanded(child: Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)))),
-          Text(percentage, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
-          const SizedBox(width: 16),
-          Text(amount, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            percentage,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            amount,
+            style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+          ),
         ],
       ),
     );
