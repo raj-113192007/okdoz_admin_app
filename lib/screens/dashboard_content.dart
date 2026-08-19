@@ -129,19 +129,19 @@ class DashboardContent extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Live Orders Table
-        const LiveOrdersTable(),
+        LiveOrdersTable(onNavigate: onNavigate),
       ],
     );
   }
 
   Widget _buildRightSidebar(BuildContext context) {
     return Column(
-      children: const [
-        LiveActivityWidget(),
-        SizedBox(height: 24),
-        TopPerformingWidget(),
-        SizedBox(height: 24),
-        RecentFeedbackWidget(),
+      children: [
+        LiveActivityWidget(onNavigate: onNavigate),
+        const SizedBox(height: 24),
+        TopPerformingWidget(onNavigate: onNavigate),
+        const SizedBox(height: 24),
+        RecentFeedbackWidget(onNavigate: onNavigate),
       ],
     );
   }

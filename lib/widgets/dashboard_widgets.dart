@@ -652,7 +652,8 @@ class CategoryCardsRow extends StatelessWidget {
 }
 
 class LiveOrdersTable extends StatelessWidget {
-  const LiveOrdersTable({super.key});
+  final Function(int)? onNavigate;
+  const LiveOrdersTable({super.key, this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
@@ -675,7 +676,7 @@ class LiveOrdersTable extends StatelessWidget {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () => onNavigate?.call(10),
                   child: const Text('View All Orders →', style: TextStyle(color: Color(0xFFFF6D00))),
                 ),
               ],
@@ -784,7 +785,8 @@ class LiveOrdersTable extends StatelessWidget {
 // Sidebar Widgets (Right)
 
 class LiveActivityWidget extends StatelessWidget {
-  const LiveActivityWidget({super.key});
+  final Function(int)? onNavigate;
+  const LiveActivityWidget({super.key, this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
@@ -802,7 +804,10 @@ class LiveActivityWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('Live Activity', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
-              TextButton(onPressed: () {}, child: const Text('View all', style: TextStyle(fontSize: 12))),
+              TextButton(
+                onPressed: () => onNavigate?.call(1),
+                child: const Text('View all', style: TextStyle(fontSize: 12)),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -849,7 +854,8 @@ class LiveActivityWidget extends StatelessWidget {
 }
 
 class TopPerformingWidget extends StatelessWidget {
-  const TopPerformingWidget({super.key});
+  final Function(int)? onNavigate;
+  const TopPerformingWidget({super.key, this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
@@ -886,7 +892,7 @@ class TopPerformingWidget extends StatelessWidget {
           ),
           Center(
             child: TextButton(
-              onPressed: () {},
+              onPressed: () => onNavigate?.call(2),
               child: const Text('View All Restaurants →', style: TextStyle(color: Color(0xFFFF6D00))),
             ),
           ),
@@ -930,7 +936,8 @@ class TopPerformingWidget extends StatelessWidget {
 }
 
 class RecentFeedbackWidget extends StatelessWidget {
-  const RecentFeedbackWidget({super.key});
+  final Function(int)? onNavigate;
+  const RecentFeedbackWidget({super.key, this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
@@ -948,7 +955,10 @@ class RecentFeedbackWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('Recent Feedback', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
-              TextButton(onPressed: () {}, child: const Text('View All', style: TextStyle(fontSize: 12))),
+              TextButton(
+                onPressed: () => onNavigate?.call(19),
+                child: const Text('View All', style: TextStyle(fontSize: 12)),
+              ),
             ],
           ),
           const SizedBox(height: 16),

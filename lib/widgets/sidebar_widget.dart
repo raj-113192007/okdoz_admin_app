@@ -396,7 +396,28 @@ class _SidebarWidgetState extends State<SidebarWidget> {
               Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Confirm Logout'),
+                        content: const Text('Are you sure you want to log out of the OK Doz Admin Panel?'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Logged out successfully.')),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+                            child: const Text('Logout'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                   child: Row(
                     mainAxisAlignment: widget.isCollapsed
                         ? MainAxisAlignment.center

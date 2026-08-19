@@ -21,6 +21,59 @@ class EcommerceMerchantsScreen extends StatefulWidget {
 class _EcommerceMerchantsScreenState extends State<EcommerceMerchantsScreen> {
   late Stream<QuerySnapshot> _activeMerchantsStream;
 
+  void _showAddMerchantDialog(BuildContext context) {
+    final nameCtrl = TextEditingController();
+    final phoneCtrl = TextEditingController();
+    final addressCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Add New ${widget.title} Merchant'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Store / Business Name')),
+            const SizedBox(height: 8),
+            TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Phone Number')),
+            const SizedBox(height: 8),
+            TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'Store Address')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameCtrl.text.trim().isEmpty) return;
+              try {
+                await FirebaseFirestore.instance.collection('vendors').add({
+                  'name': nameCtrl.text.trim(),
+                  'phone': phoneCtrl.text.trim(),
+                  'address': addressCtrl.text.trim(),
+                  'category': widget.title == 'All Merchants' ? 'Restaurant' : widget.title,
+                  'status': 'active',
+                  'rating': '5.0',
+                  'orders': 0,
+                  'createdAt': FieldValue.serverTimestamp(),
+                });
+                if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Merchant added successfully!'), backgroundColor: Colors.green),
+                  );
+                }
+              } catch (e) {
+                if (ctx.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: widget.color, foregroundColor: Colors.white),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -84,7 +137,7 @@ class _EcommerceMerchantsScreenState extends State<EcommerceMerchantsScreen> {
                       ],
                     ),
                     ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () => _showAddMerchantDialog(context),
                       icon: const Icon(Icons.add),
                       label: const Text('Add Merchant'),
                       style: ElevatedButton.styleFrom(

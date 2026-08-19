@@ -23,6 +23,58 @@ class _UsersListScreenState extends State<UsersListScreen> {
   String _selectedStatus = 'All';
   final List<String> _statuses = ['All', 'Active', 'Pending', 'Blocked'];
 
+  void _showAddUserDialog(BuildContext context) {
+    final nameCtrl = TextEditingController();
+    final phoneCtrl = TextEditingController();
+    final emailCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Add New ${widget.title}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Full Name')),
+            const SizedBox(height: 8),
+            TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Phone Number')),
+            const SizedBox(height: 8),
+            TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: 'Email Address')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameCtrl.text.trim().isEmpty) return;
+              try {
+                await FirebaseFirestore.instance.collection(widget.collectionName).add({
+                  'name': nameCtrl.text.trim(),
+                  'displayName': nameCtrl.text.trim(),
+                  'phone': phoneCtrl.text.trim(),
+                  'phoneNumber': phoneCtrl.text.trim(),
+                  'email': emailCtrl.text.trim(),
+                  'status': 'Active',
+                  'createdAt': FieldValue.serverTimestamp(),
+                });
+                if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('${widget.title} added successfully!'), backgroundColor: Colors.green),
+                  );
+                }
+              } catch (e) {
+                if (ctx.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF6D00), foregroundColor: Colors.white),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Query query = FirebaseFirestore.instance.collection(widget.collectionName).orderBy('createdAt', descending: true);
@@ -71,34 +123,50 @@ class _UsersListScreenState extends State<UsersListScreen> {
                             ),
                           ],
                         ),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: _statuses.map((status) {
-                              final isSelected = _selectedStatus == status;
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: FilterChip(
-                                  label: Text(status),
-                                  selected: isSelected,
-                                  onSelected: (bool selected) {
-                                    if (selected) {
-                                      setState(() {
-                                        _selectedStatus = status;
-                                      });
-                                    }
-                                  },
-                                  selectedColor: const Color(0xFFFF6D00).withValues(alpha: 0.15),
-                                  checkmarkColor: const Color(0xFFFF6D00),
-                                  labelStyle: TextStyle(
-                                    color: isSelected ? const Color(0xFFFF6D00) : const Color(0xFF64748B),
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: _statuses.map((status) {
+                                  final isSelected = _selectedStatus == status;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(right: 8.0),
+                                    child: FilterChip(
+                                      label: Text(status),
+                                      selected: isSelected,
+                                      onSelected: (bool selected) {
+                                        if (selected) {
+                                          setState(() {
+                                            _selectedStatus = status;
+                                          });
+                                        }
+                                      },
+                                      selectedColor: const Color(0xFFFF6D00).withValues(alpha: 0.15),
+                                      checkmarkColor: const Color(0xFFFF6D00),
+                                      labelStyle: TextStyle(
+                                        color: isSelected ? const Color(0xFFFF6D00) : const Color(0xFF64748B),
+                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            ElevatedButton.icon(
+                              onPressed: () => _showAddUserDialog(context),
+                              icon: const Icon(Icons.add, size: 18),
+                              label: Text('Add ${widget.title}'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFF6D00),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
