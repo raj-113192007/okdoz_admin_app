@@ -3,6 +3,142 @@ import 'package:flutter/material.dart';
 class TopHeader extends StatelessWidget {
   const TopHeader({super.key});
 
+  void _showCommandPalette(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => const CommandPaletteDialog(),
+    );
+  }
+
+  void _showNotificationsDrawer(BuildContext context) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Notifications',
+      transitionDuration: const Duration(milliseconds: 250),
+      pageBuilder: (ctx, anim1, anim2) => const SizedBox(),
+      transitionBuilder: (ctx, anim1, anim2, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: 380,
+                height: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(color: Colors.black26, blurRadius: 20, spreadRadius: 5),
+                  ],
+                ),
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: const [
+                            Icon(Icons.notifications_active_outlined, color: Color(0xFFFF6D00)),
+                            SizedBox(width: 10),
+                            Text(
+                              'System Notifications',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 20),
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          _notificationTile(
+                            'New Restaurant Registered',
+                            'Royal Sweets & Restaurant applied for approval.',
+                            '10 mins ago',
+                            Icons.storefront,
+                            const Color(0xFFFF6D00),
+                          ),
+                          _notificationTile(
+                            'Delivery Partner Signup',
+                            'Rahul Sharma uploaded DL & RC documents.',
+                            '45 mins ago',
+                            Icons.two_wheeler,
+                            Colors.purple,
+                          ),
+                          _notificationTile(
+                            'High Value Order Placed',
+                            'Order #1092 value ₹2,450 (Grocery sector).',
+                            '2 hours ago',
+                            Icons.shopping_bag_outlined,
+                            Colors.green,
+                          ),
+                          _notificationTile(
+                            'Technician Verification Request',
+                            'Anil Kumar (RO Service Expert) updated profile.',
+                            '5 hours ago',
+                            Icons.build_outlined,
+                            Colors.teal,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _notificationTile(String title, String subtitle, String time, IconData icon, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: color.withValues(alpha: 0.1),
+            child: Icon(icon, size: 18, color: color),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1E293B))),
+                const SizedBox(height: 4),
+                Text(subtitle, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                const SizedBox(height: 6),
+                Text(time, style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -26,75 +162,88 @@ class TopHeader extends StatelessWidget {
             ),
             const SizedBox(width: 48), // Replaces Spacer for horizontal scroll
             
-            // Search Bar
-            Container(
-              width: 300,
-              height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.search, color: Color(0xFF94A3B8), size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Search anything...',
-                        hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-                        border: InputBorder.none,
-                        isDense: true,
+            // Search Bar Trigger
+            InkWell(
+              onTap: () => _showCommandPalette(context),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                width: 320,
+                height: 40,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.search, color: Color(0xFF94A3B8), size: 18),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Search anything... (Ctrl + K)',
+                        style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                       ),
                     ),
-                  ),
-                ],
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text('Ctrl K', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black54)),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(width: 24),
             
             // Date
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade200),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: const [
-                  Text('24 May 2025', style: TextStyle(color: Color(0xFF64748B), fontSize: 14)),
+                  Text('19 Aug 2026', style: TextStyle(color: Color(0xFF64748B), fontSize: 13)),
                   SizedBox(width: 8),
-                  Icon(Icons.calendar_today_outlined, color: Color(0xFF64748B), size: 16),
+                  Icon(Icons.calendar_today_outlined, color: Color(0xFF64748B), size: 15),
                 ],
               ),
             ),
-            const SizedBox(width: 24),
+            const SizedBox(width: 20),
             
-            // Icons
-            Stack(
-              children: [
-                const Icon(Icons.notifications_none, color: Color(0xFF64748B)),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
+            // Notifications Icon Trigger
+            InkWell(
+              onTap: () => _showNotificationsDrawer(context),
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                padding: const EdgeInsets.all(6.0),
+                child: Stack(
+                  children: [
+                    const Icon(Icons.notifications_none, color: Color(0xFF64748B), size: 24),
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Text('4', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                      ),
                     ),
-                    child: const Text('3', style: TextStyle(color: Colors.white, fontSize: 8)),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
             const SizedBox(width: 16),
-            const Icon(Icons.message_outlined, color: Color(0xFF64748B)),
-            const SizedBox(width: 16),
-            const Icon(Icons.dark_mode_outlined, color: Color(0xFF64748B)),
-            const SizedBox(width: 24),
+            const Icon(Icons.message_outlined, color: Color(0xFF64748B), size: 22),
+            const SizedBox(width: 20),
             
             // Profile
             Row(
@@ -104,16 +253,120 @@ class TopHeader extends StatelessWidget {
                   backgroundColor: Color(0xFFE2E8F0),
                   child: Icon(Icons.person, color: Color(0xFF94A3B8)),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
-                    Text('Admin', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1E293B))),
-                    Text('Super Admin', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                    Text('Admin', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1E293B))),
+                    Text('Super Admin', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
                   ],
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CommandPaletteDialog extends StatefulWidget {
+  const CommandPaletteDialog({super.key});
+
+  @override
+  State<CommandPaletteDialog> createState() => _CommandPaletteDialogState();
+}
+
+class _CommandPaletteDialogState extends State<CommandPaletteDialog> {
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+
+  final List<Map<String, dynamic>> _allNavItems = const [
+    {'title': 'Dashboard Overview', 'category': 'Page', 'icon': Icons.dashboard_outlined},
+    {'title': 'Pending Merchant Approvals', 'category': 'Approvals', 'icon': Icons.verified_user_outlined},
+    {'title': 'Restaurant Approvals', 'category': 'Approvals', 'icon': Icons.storefront_outlined},
+    {'title': 'Grocery Approvals', 'category': 'Approvals', 'icon': Icons.local_grocery_store_outlined},
+    {'title': 'Pharmacy Approvals', 'category': 'Approvals', 'icon': Icons.local_pharmacy_outlined},
+    {'title': 'Pickup & Courier Approvals', 'category': 'Approvals', 'icon': Icons.local_shipping_outlined},
+    {'title': 'Delivery Partner Approvals', 'category': 'Approvals', 'icon': Icons.two_wheeler_outlined},
+    {'title': 'Technician Approvals', 'category': 'Approvals', 'icon': Icons.build_circle_outlined},
+    {'title': 'Order Management', 'category': 'Management', 'icon': Icons.receipt_long_outlined},
+    {'title': 'All Merchants List', 'category': 'Management', 'icon': Icons.store_mall_directory_outlined},
+    {'title': 'Customer Database', 'category': 'Management', 'icon': Icons.people_outline},
+    {'title': 'Delivery Partners List', 'category': 'Management', 'icon': Icons.badge_outlined},
+    {'title': 'Technicians List', 'category': 'Management', 'icon': Icons.engineering_outlined},
+    {'title': 'Finance Overview', 'category': 'Finance', 'icon': Icons.account_balance_wallet_outlined},
+    {'title': 'Coupons & Discounts', 'category': 'Finance', 'icon': Icons.local_offer_outlined},
+    {'title': 'Promotions & Banners', 'category': 'Marketing', 'icon': Icons.campaign_outlined},
+    {'title': 'Reports & Analytics', 'category': 'Analytics', 'icon': Icons.bar_chart_outlined},
+    {'title': 'Settings & Configurations', 'category': 'System', 'icon': Icons.settings_outlined},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = _allNavItems.where((item) {
+      final title = item['title'].toString().toLowerCase();
+      final category = item['category'].toString().toLowerCase();
+      return title.contains(_query.toLowerCase()) || category.contains(_query.toLowerCase());
+    }).toList();
+
+    return Dialog(
+      alignment: Alignment.topCenter,
+      insetPadding: const EdgeInsets.only(top: 80, left: 16, right: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        width: 600,
+        constraints: const BoxConstraints(maxHeight: 460),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.search, color: Color(0xFFFF6D00), size: 22),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    autofocus: true,
+                    onChanged: (val) => setState(() => _query = val),
+                    decoration: const InputDecoration(
+                      hintText: 'Type to search pages, orders, or merchants...',
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text('ESC to close', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                ),
+              ],
+            ),
+            const Divider(),
+            Expanded(
+              child: filtered.isEmpty
+                  ? Center(
+                      child: Text('No results matching "$_query"', style: const TextStyle(color: Colors.grey)),
+                    )
+                  : ListView.builder(
+                      itemCount: filtered.length,
+                      itemBuilder: (ctx, index) {
+                        final item = filtered[index];
+                        return ListTile(
+                          leading: Icon(item['icon'] as IconData, color: const Color(0xFFFF6D00)),
+                          title: Text(item['title'] as String, style: const TextStyle(fontWeight: FontWeight.w600)),
+                          subtitle: Text(item['category'] as String, style: const TextStyle(fontSize: 11)),
+                          trailing: const Icon(Icons.chevron_right, size: 18, color: Colors.grey),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                          },
+                        );
+                      },
+                    ),
             ),
           ],
         ),

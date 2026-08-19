@@ -3,7 +3,7 @@ import '../widgets/dashboard_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
-class UsersListScreen extends StatelessWidget {
+class UsersListScreen extends StatefulWidget {
   final String title;
   final IconData icon;
   final String collectionName;
@@ -16,7 +16,20 @@ class UsersListScreen extends StatelessWidget {
   });
 
   @override
+  State<UsersListScreen> createState() => _UsersListScreenState();
+}
+
+class _UsersListScreenState extends State<UsersListScreen> {
+  String _selectedStatus = 'All';
+  final List<String> _statuses = ['All', 'Active', 'Pending', 'Blocked'];
+
+  @override
   Widget build(BuildContext context) {
+    Query query = FirebaseFirestore.instance.collection(widget.collectionName).orderBy('createdAt', descending: true);
+    if (_selectedStatus != 'All') {
+      query = FirebaseFirestore.instance.collection(widget.collectionName).where('status', isEqualTo: _selectedStatus);
+    }
+
     return Column(
       children: [
         const TopHeader(),
@@ -33,7 +46,7 @@ class UsersListScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: const EdgeInsets.all(20.0),
                     child: Wrap(
                       alignment: WrapAlignment.spaceBetween,
                       crossAxisAlignment: WrapCrossAlignment.center,
@@ -49,25 +62,44 @@ class UsersListScreen extends StatelessWidget {
                                 color: const Color(0xFFFF6D00).withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(icon, color: const Color(0xFFFF6D00)),
+                              child: Icon(widget.icon, color: const Color(0xFFFF6D00)),
                             ),
                             const SizedBox(width: 16),
                             Text(
-                              title,
+                              widget.title,
                               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
                             ),
                           ],
                         ),
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(Icons.add),
-                          label: Text('Add $title'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFF6D00),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: _statuses.map((status) {
+                              final isSelected = _selectedStatus == status;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: FilterChip(
+                                  label: Text(status),
+                                  selected: isSelected,
+                                  onSelected: (bool selected) {
+                                    if (selected) {
+                                      setState(() {
+                                        _selectedStatus = status;
+                                      });
+                                    }
+                                  },
+                                  selectedColor: const Color(0xFFFF6D00).withValues(alpha: 0.15),
+                                  checkmarkColor: const Color(0xFFFF6D00),
+                                  labelStyle: TextStyle(
+                                    color: isSelected ? const Color(0xFFFF6D00) : const Color(0xFF64748B),
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -96,7 +128,7 @@ class UsersListScreen extends StatelessWidget {
                                 const Divider(height: 1),
                                 Expanded(
                                   child: StreamBuilder<QuerySnapshot>(
-                                    stream: FirebaseFirestore.instance.collection(collectionName).orderBy('createdAt', descending: true).snapshots(),
+                                    stream: query.snapshots(),
                                     builder: (context, snapshot) {
                                       if (snapshot.hasError) {
                                         return const Center(child: Text('Something went wrong'));
@@ -107,7 +139,7 @@ class UsersListScreen extends StatelessWidget {
 
                                       final users = snapshot.data?.docs ?? [];
                                       if (users.isEmpty) {
-                                        return const Center(child: Text('No users found.'));
+                                        return const Center(child: Text('No users found under this status.'));
                                       }
 
                                       return ListView.separated(
@@ -116,7 +148,7 @@ class UsersListScreen extends StatelessWidget {
                                         itemBuilder: (context, index) {
                                           final userData = users[index].data() as Map<String, dynamic>;
                                           final name = userData['displayName'] ?? userData['name'] ?? 'Unknown User';
-                                          final email = userData['deviceInfo'] ?? userData['email'] ?? 'No Device Info'; // Reusing email field for device info
+                                          final email = userData['deviceInfo'] ?? userData['email'] ?? 'No Device Info';
                                           final phone = userData['phoneNumber'] ?? userData['phone'] ?? 'No Phone';
                                           final status = userData['status'] ?? 'Active';
                                           
@@ -132,7 +164,7 @@ class UsersListScreen extends StatelessWidget {
                                             phone: phone,
                                             date: joinDate,
                                             status: status,
-                                            onTapDetails: () => _showUserDetailsDialog(context, users[index], collectionName),
+                                            onTapDetails: () => _showUserDetailsDialog(context, users[index], widget.collectionName),
                                           );
                                         },
                                       );
@@ -188,7 +220,7 @@ class _AnimatedUserRowState extends State<_AnimatedUserRow> {
                 children: [
                   CircleAvatar(
                     backgroundColor: Colors.blue.withValues(alpha: 0.1),
-                    child: Text(widget.name.substring(0, 1), style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                    child: Text(widget.name.substring(0, widget.name.isNotEmpty ? 1 : 1), style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(width: 12),
                   Column(
@@ -239,7 +271,6 @@ void _showUserDetailsDialog(BuildContext context, DocumentSnapshot userDoc, Stri
   final userData = userDoc.data() as Map<String, dynamic>;
   final name = userData['displayName'] ?? userData['name'] ?? 'Unknown User';
   
-  // Decide the field to filter orders
   String? orderFilterField;
   if (collectionName == 'users') orderFilterField = 'user_id';
   else if (collectionName == 'delivery_partners') orderFilterField = 'delivery_partner_id';
@@ -273,14 +304,13 @@ void _showUserDetailsDialog(BuildContext context, DocumentSnapshot userDoc, Stri
                       final orders = snapshot.data?.docs ?? [];
                       if (orders.isEmpty) return const Text('No orders found for this user.');
 
-                      // Sort in memory to avoid missing index errors in Firestore
                       orders.sort((a, b) {
                         final aData = a.data() as Map<String, dynamic>;
                         final bData = b.data() as Map<String, dynamic>;
                         final aTime = aData['created_at'] as Timestamp?;
                         final bTime = bData['created_at'] as Timestamp?;
                         if (aTime == null || bTime == null) return 0;
-                        return bTime.compareTo(aTime); // descending
+                        return bTime.compareTo(aTime);
                       });
 
                       return ListView.builder(
