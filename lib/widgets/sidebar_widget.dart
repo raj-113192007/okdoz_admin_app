@@ -614,7 +614,7 @@ class _NavItemState extends State<_NavItem> {
     if (widget.isCollapsed) {
       return Tooltip(
         message: widget.title,
-        position: TooltipPosition.right,
+        preferBelow: false,
         child: childWidget,
       );
     }
