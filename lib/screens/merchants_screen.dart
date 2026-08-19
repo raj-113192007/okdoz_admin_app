@@ -4,7 +4,8 @@ import '../widgets/dashboard_widgets.dart'; // For TopHeader
 import 'merchant_detail_screen.dart';
 
 class MerchantsScreen extends StatefulWidget {
-  const MerchantsScreen({super.key});
+  final String? initialCategory;
+  const MerchantsScreen({super.key, this.initialCategory});
 
   @override
   State<MerchantsScreen> createState() => _MerchantsScreenState();
@@ -13,22 +14,53 @@ class MerchantsScreen extends StatefulWidget {
 class _MerchantsScreenState extends State<MerchantsScreen> {
   late Stream<QuerySnapshot> _merchantsStream;
 
-  String _selectedFilter = 'All';
-  final List<String> _filters = ['All', 'Restaurant', 'Grocery', 'Pharmacy', 'Courier', 'Electronics Service', 'RO Service'];
+  late String _selectedFilter;
+  final List<String> _filters = [
+    'All',
+    'Restaurant',
+    'Grocery',
+    'Pharmacy',
+    'Courier',
+    'Electronics Service',
+    'RO Service',
+    'Delivery Partners',
+    'Technicians',
+  ];
 
   @override
   void initState() {
     super.initState();
+    _selectedFilter = widget.initialCategory ?? 'All';
     _updateStream();
   }
 
-  void _updateStream() {
-    var query = FirebaseFirestore.instance
-        .collection('vendors')
-        .where('status', isEqualTo: 'pending_approval');
+  @override
+  void didUpdateWidget(covariant MerchantsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialCategory != oldWidget.initialCategory && widget.initialCategory != null) {
+      _selectedFilter = widget.initialCategory!;
+      _updateStream();
+    }
+  }
 
-    if (_selectedFilter != 'All') {
-      query = query.where('category', isEqualTo: _selectedFilter);
+  void _updateStream() {
+    Query query;
+    if (_selectedFilter == 'Delivery Partners') {
+      query = FirebaseFirestore.instance
+          .collection('delivery_partners')
+          .where('status', isEqualTo: 'pending_approval');
+    } else if (_selectedFilter == 'Technicians') {
+      query = FirebaseFirestore.instance
+          .collection('technicians')
+          .where('status', isEqualTo: 'pending_approval');
+    } else {
+      query = FirebaseFirestore.instance
+          .collection('vendors')
+          .where('status', isEqualTo: 'pending_approval');
+
+      if (_selectedFilter != 'All') {
+        query = query.where('category', isEqualTo: _selectedFilter);
+      }
     }
 
     setState(() {
@@ -45,19 +77,28 @@ class _MerchantsScreenState extends State<MerchantsScreen> {
       case 'Electronics Service': return Colors.grey;
       case 'RO Service': return Colors.lightBlue;
       case 'Restaurant': return const Color(0xFFFF6D00);
+      case 'Delivery Partners': return Colors.purple;
+      case 'Technicians': return Colors.teal;
       default: return const Color(0xFFFF6D00); // All or any other
     }
   }
 
-  Future<void> _approveRestaurant(BuildContext context, String docId, String restaurantName) async {
+  Future<void> _approveItem(BuildContext context, String docId, String itemName, String category) async {
     try {
-      await FirebaseFirestore.instance.collection('vendors').doc(docId).update({
+      String collection = 'vendors';
+      if (category == 'Delivery Partners') {
+        collection = 'delivery_partners';
+      } else if (category == 'Technicians') {
+        collection = 'technicians';
+      }
+
+      await FirebaseFirestore.instance.collection(collection).doc(docId).update({
         'status': 'active',
       });
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('$restaurantName is now approved!'),
+            content: Text('$itemName is now approved!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -195,7 +236,6 @@ class _MerchantsScreenState extends State<MerchantsScreen> {
                                           final name = data['name'] ?? 'Unknown Name';
                                           final category = data['category'] ?? 'Unknown';
                                           final email = data['email'] ?? 'N/A';
-                                          final status = data['status'] ?? 'pending_approval';
 
                                           final rowColor = _getColorForCategory(category);
 
@@ -262,7 +302,7 @@ class _MerchantsScreenState extends State<MerchantsScreen> {
                                                   child: Align(
                                                     alignment: Alignment.centerLeft,
                                                     child: ElevatedButton(
-                                                      onPressed: () => _approveRestaurant(context, docId, name),
+                                                      onPressed: () => _approveItem(context, docId, name, category),
                                                       style: ElevatedButton.styleFrom(
                                                         backgroundColor: Colors.green,
                                                         foregroundColor: Colors.white,

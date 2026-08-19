@@ -127,35 +127,47 @@ class KpiRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 1100;
-    
-    if (isMobile) {
-      return Column(
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
         children: [
+          SizedBox(
+            width: 160,
+            child: _buildKpiCard('Total Revenue', '₹ 0', '0.0%', true, Icons.account_balance_wallet, Colors.orange),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 160,
+            child: _buildKpiCard('Total Orders', '0', '0.0%', true, Icons.receipt_long, Colors.purple),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 160,
+            child: _buildKpiCard('Completed Orders', '0', '0.0%', true, Icons.check_circle_outline, Colors.green),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 160,
+            child: _buildKpiCard('Total Customers', '0', '0.0%', true, Icons.people_alt_outlined, Colors.amber),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 170,
+            child: _buildKpiCard('Active Delivery', '0', '0.0%', true, Icons.two_wheeler, Colors.blue),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 160,
+            child: _buildKpiCard('Cancelled Orders', '0', '0.0%', false, Icons.cancel_outlined, Colors.red),
+          ),
         ],
-      );
-    }
-    
-    return Row(
-      children: [
-        Expanded(child: _buildKpiCard('Total Revenue', '₹ 0', '0.0%', true, Icons.account_balance_wallet, Colors.orange)),
-        const SizedBox(width: 16),
-        Expanded(child: _buildKpiCard('Total Orders', '0', '0.0%', true, Icons.receipt_long, Colors.purple)),
-        const SizedBox(width: 16),
-        Expanded(child: _buildKpiCard('Completed Orders', '0', '0.0%', true, Icons.check_circle_outline, Colors.green)),
-        const SizedBox(width: 16),
-        Expanded(child: _buildKpiCard('Total Customers', '0', '0.0%', true, Icons.people_alt_outlined, Colors.amber)),
-        const SizedBox(width: 16),
-        Expanded(child: _buildKpiCard('Active Delivery Partners', '0', '0.0%', true, Icons.two_wheeler, Colors.blue)),
-        const SizedBox(width: 16),
-        Expanded(child: _buildKpiCard('Cancelled Orders', '0', '0.0%', false, Icons.cancel_outlined, Colors.red)),
-      ],
+      ),
     );
   }
 
   Widget _buildKpiCard(String title, String value, String percentage, bool isPositive, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -167,30 +179,35 @@ class KpiRow extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: color, size: 20),
+                child: Icon(icon, color: color, size: 18),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    height: 1.15,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,

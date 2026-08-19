@@ -56,34 +56,45 @@ class DashboardContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Welcome Text
-        const Text(
-          'Welcome back, Admin 👋',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1E293B),
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          "Here's what's happening with Okdoz today.",
-          style: TextStyle(
-            fontSize: 14,
-            color: Color(0xFF64748B),
-          ),
-        ),
-        const SizedBox(height: 24),
-
-        // Filter Row (Dummy)
+        // Welcome Text & Filter Dropdowns in Single Inline Header Row
         Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
           spacing: 16,
-          runSpacing: 16,
-          alignment: WrapAlignment.end,
+          runSpacing: 12,
           children: [
-            _buildFilterDropdown('All Cities'),
-            _buildFilterDropdown('All Sectors'),
-            _buildFilterDropdown('Today'),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text(
+                  'Welcome back, Admin 👋',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  "Here's what's happening with Okdoz today.",
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+              ],
+            ),
+            
+            // Compact Inline Filter Pills
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildFilterDropdown('All Cities', Icons.location_on_outlined),
+                _buildFilterDropdown('All Sectors', Icons.business_outlined),
+                _buildFilterDropdown('Today', Icons.calendar_today_outlined),
+              ],
+            ),
           ],
         ),
         const SizedBox(height: 24),
@@ -134,18 +145,35 @@ class DashboardContent extends StatelessWidget {
     );
   }
 
-  Widget _buildFilterDropdown(String hint) {
+  Widget _buildFilterDropdown(String hint, IconData icon) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min, // Prevents expanding full width!
         children: [
-          Text(hint, style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
-          const SizedBox(width: 8),
+          Icon(icon, color: const Color(0xFFFF6D00), size: 15),
+          const SizedBox(width: 6),
+          Text(
+            hint,
+            style: const TextStyle(
+              color: Color(0xFF334155),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 6),
           const Icon(Icons.keyboard_arrow_down, color: Color(0xFF64748B), size: 16),
         ],
       ),
