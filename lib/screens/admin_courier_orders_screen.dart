@@ -237,44 +237,48 @@ class _AdminCourierOrdersScreenState extends State<AdminCourierOrdersScreen> wit
             ),
             const Divider(height: 24),
 
-            // Package Photo Gallery (Multiple Images)
-            if (imageUrls.isNotEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('📸 Package Photos (${imageUrls.length}):', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.amber)),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 85,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: imageUrls.length,
-                      itemBuilder: (context, idx) {
-                        final img = imageUrls[idx];
-                        return Container(
-                          width: 85,
-                          height: 85,
-                          margin: const EdgeInsets.only(right: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: Colors.amber.shade300, width: 1.5),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: img.startsWith('data:image')
-                                ? Image.memory(base64Decode(img.split(',').last), fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.inventory_2, color: Colors.amber))
-                                : (img.startsWith('http')
-                                    ? Image.network(img, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.inventory_2, color: Colors.amber))
-                                    : Image.asset(img, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.inventory_2, color: Colors.amber))),
-                          ),
-                        );
-                      },
-                    ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Package Photo Gallery (Multiple Images)
+                if (imageUrls.isNotEmpty)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('📸 Package Photos (${imageUrls.length}):', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.amber)),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 85,
+                        width: 180,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: imageUrls.length,
+                          itemBuilder: (context, idx) {
+                            final img = imageUrls[idx];
+                            return Container(
+                              width: 85,
+                              height: 85,
+                              margin: const EdgeInsets.only(right: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: Colors.amber.shade300, width: 1.5),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: img.startsWith('data:image')
+                                    ? Image.memory(base64Decode(img.split(',').last), fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.inventory_2, color: Colors.amber))
+                                    : (img.startsWith('http')
+                                        ? Image.network(img, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.inventory_2, color: Colors.amber))
+                                        : Image.asset(img, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.inventory_2, color: Colors.amber))),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                ],
-              ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(

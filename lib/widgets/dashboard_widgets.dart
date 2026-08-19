@@ -496,38 +496,42 @@ class CategoryCardsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 1100;
-    
-    if (isMobile) {
-      return Column(
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
         children: [
-          Row(children: [Expanded(child: _buildCategoryCard('Restaurant', '0', '₹ 0', Icons.restaurant, Colors.orange)), const SizedBox(width: 16), Expanded(child: _buildCategoryCard('Grocery', '0', '₹ 0', Icons.local_grocery_store, Colors.green))]),
-          const SizedBox(height: 16),
-          Row(children: [Expanded(child: _buildCategoryCard('Pharmacy', '0', '₹ 0', Icons.local_pharmacy, Colors.blue)), const SizedBox(width: 16), Expanded(child: _buildCategoryCard('Pickup', '0', '₹ 0', Icons.local_shipping, Colors.amber))]),
-          const SizedBox(height: 16),
-          Row(children: [Expanded(child: _buildCategoryCard('Electronics', '0', '₹ 0', Icons.electrical_services, Colors.grey.shade700)), const SizedBox(width: 16), const Expanded(child: SizedBox())]),
+          SizedBox(
+            width: 190,
+            child: _buildCategoryCard('Restaurant', '0', '₹ 0', Icons.restaurant, Colors.orange),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 190,
+            child: _buildCategoryCard('Grocery', '0', '₹ 0', Icons.local_grocery_store, Colors.green),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 190,
+            child: _buildCategoryCard('Pharmacy', '0', '₹ 0', Icons.local_pharmacy, Colors.blue),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 190,
+            child: _buildCategoryCard('Pickup & Courier', '0', '₹ 0', Icons.local_shipping, Colors.amber),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 190,
+            child: _buildCategoryCard('Electronics', '0', '₹ 0', Icons.electrical_services, Colors.grey.shade700),
+          ),
         ],
-      );
-    }
-    
-    return Row(
-      children: [
-        Expanded(child: _buildCategoryCard('Restaurant', '0', '₹ 0', Icons.restaurant, Colors.orange)),
-        const SizedBox(width: 16),
-        Expanded(child: _buildCategoryCard('Grocery', '0', '₹ 0', Icons.local_grocery_store, Colors.green)),
-        const SizedBox(width: 16),
-        Expanded(child: _buildCategoryCard('Pharmacy', '0', '₹ 0', Icons.local_pharmacy, Colors.blue)),
-        const SizedBox(width: 16),
-        Expanded(child: _buildCategoryCard('Pickup & Courier', '0', '₹ 0', Icons.local_shipping, Colors.amber)),
-        const SizedBox(width: 16),
-        Expanded(child: _buildCategoryCard('Electronics', '0', '₹ 0', Icons.electrical_services, Colors.grey.shade700)),
-      ],
+      ),
     );
   }
 
   Widget _buildCategoryCard(String title, String orders, String revenue, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
@@ -538,15 +542,19 @@ class CategoryCardsRow extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, color: color, size: 24),
+              Icon(icon, color: color, size: 20),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.bold),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -554,8 +562,12 @@ class CategoryCardsRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerLeft, child: Text(orders, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)))),
-                    const Text('Orders', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(orders, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                    ),
+                    const Text('Orders', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
                   ],
                 ),
               ),
@@ -564,18 +576,22 @@ class CategoryCardsRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.centerRight, child: Text(revenue, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)))),
-                    const Text('Revenue', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(revenue, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                    ),
+                    const Text('Revenue', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Center(
             child: Text(
               'View Details →',
-              style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+              style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -670,18 +686,22 @@ class LiveOrdersTable extends StatelessWidget {
               children: [
                 Icon(icon, size: 16, color: iconColor),
                 const SizedBox(width: 8),
-                Text(type, style: const TextStyle(color: Color(0xFF1E293B))),
+                Expanded(
+                  child: Text(type, style: const TextStyle(color: Color(0xFF1E293B)), overflow: TextOverflow.ellipsis),
+                ),
               ],
             ),
           ),
-          Expanded(flex: 2, child: Text(customer, style: const TextStyle(color: Color(0xFF1E293B)))),
+          Expanded(flex: 2, child: Text(customer, style: const TextStyle(color: Color(0xFF1E293B)), overflow: TextOverflow.ellipsis)),
           Expanded(
             flex: 2,
             child: Row(
               children: [
                 const CircleAvatar(radius: 12, backgroundColor: Color(0xFFE2E8F0), child: Icon(Icons.person, size: 16, color: Colors.grey)),
                 const SizedBox(width: 8),
-                Text(partner, style: const TextStyle(color: Color(0xFF1E293B))),
+                Expanded(
+                  child: Text(partner, style: const TextStyle(color: Color(0xFF1E293B)), overflow: TextOverflow.ellipsis),
+                ),
               ],
             ),
           ),
@@ -794,13 +814,17 @@ class TopPerformingWidget extends StatelessWidget {
         children: [
           const Text('Top Performing', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text('Restaurants', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFFF6D00))),
-              Text('Grocery Stores', style: TextStyle(fontSize: 13, color: Color(0xFF64748B))),
-              Text('Pharmacies', style: TextStyle(fontSize: 13, color: Color(0xFF64748B))),
-            ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: const [
+                Text('Restaurants', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFFF6D00))),
+                SizedBox(width: 12),
+                Text('Grocery Stores', style: TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                SizedBox(width: 12),
+                Text('Pharmacies', style: TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+              ],
+            ),
           ),
           const Divider(),
           const Padding(
