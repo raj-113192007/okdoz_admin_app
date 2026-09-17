@@ -15,6 +15,8 @@ class _MerchantsScreenState extends State<MerchantsScreen> {
   late Stream<QuerySnapshot> _merchantsStream;
 
   late String _selectedFilter;
+  String _selectedStatus = 'All';
+  final List<String> _statusOptions = ['All', 'Pending Approval', 'Active'];
   final List<String> _filters = [
     'All',
     'Restaurant',
@@ -46,21 +48,11 @@ class _MerchantsScreenState extends State<MerchantsScreen> {
   void _updateStream() {
     Query query;
     if (_selectedFilter == 'Delivery Partners') {
-      query = FirebaseFirestore.instance
-          .collection('delivery_partners')
-          .where('status', isEqualTo: 'pending_approval');
+      query = FirebaseFirestore.instance.collection('delivery_partners');
     } else if (_selectedFilter == 'Technicians') {
-      query = FirebaseFirestore.instance
-          .collection('technicians')
-          .where('status', isEqualTo: 'pending_approval');
+      query = FirebaseFirestore.instance.collection('technicians');
     } else {
-      query = FirebaseFirestore.instance
-          .collection('vendors')
-          .where('status', isEqualTo: 'pending_approval');
-
-      if (_selectedFilter != 'All') {
-        query = query.where('category', isEqualTo: _selectedFilter);
-      }
+      query = FirebaseFirestore.instance.collection('vendors');
     }
 
     setState(() {
@@ -297,11 +289,41 @@ class _MerchantsScreenState extends State<MerchantsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Pending Merchant Approvals',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Merchant & Partner Management',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                            ),
+                            // Status Filter Chips
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: _statusOptions.map((status) {
+                                final isSelected = _selectedStatus == status;
+                                return Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  child: ChoiceChip(
+                                    label: Text(status),
+                                    selected: isSelected,
+                                    onSelected: (selected) {
+                                      if (selected) {
+                                        setState(() => _selectedStatus = status);
+                                      }
+                                    },
+                                    selectedColor: const Color(0xFFFF6D00),
+                                    labelStyle: TextStyle(
+                                      color: isSelected ? Colors.white : const Color(0xFF64748B),
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
@@ -350,7 +372,7 @@ class _MerchantsScreenState extends State<MerchantsScreen> {
                                     children: const [
                                       Expanded(flex: 2, child: Text('Merchant Name', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
                                       Expanded(flex: 2, child: Text('Sector', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
-                                      Expanded(flex: 2, child: Text('Email', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
+                                      Expanded(flex: 2, child: Text('Phone / Email', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
                                       Expanded(flex: 1, child: Text('Status', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
                                       Expanded(flex: 1, child: Text('Action', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
                                     ],
@@ -368,22 +390,50 @@ class _MerchantsScreenState extends State<MerchantsScreen> {
                                         return const Center(child: CircularProgressIndicator(color: Color(0xFFFF6D00)));
                                       }
 
-                                      final docs = snapshot.data?.docs ?? [];
-                                      if (docs.isEmpty) {
+                                      final allDocs = snapshot.data?.docs ?? [];
+                                      final filteredDocs = allDocs.where((doc) {
+                                        final data = doc.data() as Map<String, dynamic>;
+                                        final category = (data['category'] ?? '').toString().toLowerCase();
+                                        final status = (data['status'] ?? 'pending_approval').toString().toLowerCase();
+
+                                        // Status filter
+                                        if (_selectedStatus == 'Pending Approval') {
+                                          if (status != 'pending_approval' && status != 'pending') return false;
+                                        } else if (_selectedStatus == 'Active') {
+                                          if (status != 'active' && status != 'approved') return false;
+                                        }
+
+                                        // Category filter
+                                        if (_selectedFilter != 'All') {
+                                          final sel = _selectedFilter.toLowerCase();
+                                          if (sel == 'courier' || sel == 'pickup & courier') {
+                                            if (!category.contains('courier')) return false;
+                                          } else if (sel == 'restaurant') {
+                                            if (!category.contains('restaurant') && !category.contains('tiffin') && !category.contains('food')) return false;
+                                          } else if (sel == 'delivery partners' || sel == 'technicians') {
+                                            // matched by collection
+                                          } else {
+                                            if (!category.contains(sel)) return false;
+                                          }
+                                        }
+                                        return true;
+                                      }).toList();
+
+                                      if (filteredDocs.isEmpty) {
                                         return Center(
                                           child: Column(
                                             mainAxisAlignment: MainAxisAlignment.center,
-                                            children: const [
-                                              Icon(Icons.check_circle_outline, size: 64, color: Colors.green),
-                                              SizedBox(height: 16),
-                                              Text(
-                                                'All Caught Up!',
+                                            children: [
+                                              Icon(Icons.check_circle_outline, size: 64, color: Colors.green.shade400),
+                                              const SizedBox(height: 16),
+                                              const Text(
+                                                'No Merchants Found',
                                                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
                                               ),
-                                              SizedBox(height: 8),
+                                              const SizedBox(height: 8),
                                               Text(
-                                                'No pending merchant approvals at this time.',
-                                                style: TextStyle(color: Color(0xFF64748B)),
+                                                'No merchants matching "$_selectedFilter" with status "$_selectedStatus".',
+                                                style: const TextStyle(color: Color(0xFF64748B)),
                                               ),
                                             ],
                                           ),
@@ -391,14 +441,16 @@ class _MerchantsScreenState extends State<MerchantsScreen> {
                                       }
 
                                       return ListView.separated(
-                                        itemCount: docs.length,
+                                        itemCount: filteredDocs.length,
                                         separatorBuilder: (context, index) => const Divider(height: 1),
                                         itemBuilder: (context, index) {
-                                          final data = docs[index].data() as Map<String, dynamic>;
-                                          final docId = docs[index].id;
-                                          final name = data['name'] ?? 'Unknown Name';
-                                          final category = data['category'] ?? 'Unknown';
-                                          final email = data['email'] ?? 'N/A';
+                                          final data = filteredDocs[index].data() as Map<String, dynamic>;
+                                          final docId = filteredDocs[index].id;
+                                          final name = (data['name'] ?? data['displayName'] ?? 'Unknown Partner').toString();
+                                          final category = (data['category'] ?? _selectedFilter).toString();
+                                          final contact = (data['phone'] ?? data['phoneNumber'] ?? data['email'] ?? 'N/A').toString();
+                                          final status = (data['status'] ?? 'pending_approval').toString();
+                                          final isApproved = status == 'active' || status == 'approved';
 
                                           final rowColor = _getColorForCategory(category);
 
@@ -409,77 +461,89 @@ class _MerchantsScreenState extends State<MerchantsScreen> {
                                             child: Padding(
                                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                                               child: Row(
-                                              children: [
-                                                Expanded(
-                                                  flex: 2,
-                                                  child: Row(
-                                                    children: [
-                                                      CircleAvatar(
-                                                        radius: 16,
-                                                        backgroundColor: rowColor.withValues(alpha: 0.1),
-                                                        child: Icon(Icons.storefront, size: 16, color: rowColor),
-                                                      ),
-                                                      const SizedBox(width: 12),
-                                                      Expanded(
-                                                        child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1E293B))),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  flex: 2,
-                                                  child: Text(category, style: const TextStyle(color: Color(0xFF1E293B))),
-                                                ),
-                                                Expanded(
-                                                  flex: 2,
-                                                  child: Text(email, style: const TextStyle(color: Color(0xFF64748B))),
-                                                ),
-                                                Expanded(
-                                                  flex: 1,
-                                                  child: Align(
-                                                    alignment: Alignment.centerLeft,
-                                                    child: Container(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                                      decoration: BoxDecoration(
-                                                        color: rowColor.withValues(alpha: 0.1),
-                                                        borderRadius: BorderRadius.circular(12),
-                                                        border: Border.all(color: rowColor.withValues(alpha: 0.5)),
-                                                      ),
-                                                      child: Text(
-                                                        'Pending',
-                                                        style: TextStyle(color: rowColor, fontSize: 12, fontWeight: FontWeight.w600),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  flex: 1,
-                                                  child: Align(
-                                                    alignment: Alignment.centerLeft,
-                                                    child: ElevatedButton(
-                                                      onPressed: () => _approveItem(context, docId, name, category),
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor: Colors.green,
-                                                        foregroundColor: Colors.white,
-                                                        elevation: 0,
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(8),
+                                                children: [
+                                                  Expanded(
+                                                    flex: 2,
+                                                    child: Row(
+                                                      children: [
+                                                        CircleAvatar(
+                                                          radius: 16,
+                                                          backgroundColor: rowColor.withValues(alpha: 0.1),
+                                                          child: Icon(Icons.storefront, size: 16, color: rowColor),
                                                         ),
-                                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                                      ),
-                                                      child: const Text('Approve'),
+                                                        const SizedBox(width: 12),
+                                                        Expanded(
+                                                          child: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1E293B))),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
-                                                ),
-                                              ],
+                                                  Expanded(
+                                                    flex: 2,
+                                                    child: Text(category, style: const TextStyle(color: Color(0xFF1E293B))),
+                                                  ),
+                                                  Expanded(
+                                                    flex: 2,
+                                                    child: Text(contact, style: const TextStyle(color: Color(0xFF64748B))),
+                                                  ),
+                                                  Expanded(
+                                                    flex: 1,
+                                                    child: Align(
+                                                      alignment: Alignment.centerLeft,
+                                                      child: Container(
+                                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                        decoration: BoxDecoration(
+                                                          color: (isApproved ? Colors.green : rowColor).withValues(alpha: 0.1),
+                                                          borderRadius: BorderRadius.circular(12),
+                                                          border: Border.all(color: (isApproved ? Colors.green : rowColor).withValues(alpha: 0.5)),
+                                                        ),
+                                                        child: Text(
+                                                          isApproved ? 'Active' : 'Pending',
+                                                          style: TextStyle(color: isApproved ? Colors.green : rowColor, fontSize: 12, fontWeight: FontWeight.w600),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    flex: 1,
+                                                    child: Align(
+                                                      alignment: Alignment.centerLeft,
+                                                      child: isApproved
+                                                          ? OutlinedButton.icon(
+                                                              onPressed: () {
+                                                                _showQuickPreviewDrawer(context, docId, data, category, rowColor);
+                                                              },
+                                                              icon: const Icon(Icons.check, size: 14, color: Colors.green),
+                                                              label: const Text('Approved', style: TextStyle(fontSize: 12, color: Colors.green)),
+                                                              style: OutlinedButton.styleFrom(
+                                                                side: const BorderSide(color: Colors.green),
+                                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                                              ),
+                                                            )
+                                                          : ElevatedButton(
+                                                              onPressed: () => _approveItem(context, docId, name, category),
+                                                              style: ElevatedButton.styleFrom(
+                                                                backgroundColor: Colors.green,
+                                                                foregroundColor: Colors.white,
+                                                                elevation: 0,
+                                                                shape: RoundedRectangleBorder(
+                                                                  borderRadius: BorderRadius.circular(8),
+                                                                ),
+                                                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                                              ),
+                                                              child: const Text('Approve'),
+                                                            ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                        );
-                                      },
-                        );
-                      },
-                    ),
-                  ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
                               ],
                             ),
                           ),

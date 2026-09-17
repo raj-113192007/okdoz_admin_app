@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class TopHeader extends StatelessWidget {
   final Function(int)? onNavigate;
@@ -384,41 +386,82 @@ class KpiRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          SizedBox(
-            width: 160,
-            child: _buildKpiCard('Total Revenue', '₹ 0', '0.0%', true, Icons.account_balance_wallet, Colors.orange),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 160,
-            child: _buildKpiCard('Total Orders', '0', '0.0%', true, Icons.receipt_long, Colors.purple),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 160,
-            child: _buildKpiCard('Completed Orders', '0', '0.0%', true, Icons.check_circle_outline, Colors.green),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 160,
-            child: _buildKpiCard('Total Customers', '0', '0.0%', true, Icons.people_alt_outlined, Colors.amber),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 170,
-            child: _buildKpiCard('Active Delivery', '0', '0.0%', true, Icons.two_wheeler, Colors.blue),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 160,
-            child: _buildKpiCard('Cancelled Orders', '0', '0.0%', false, Icons.cancel_outlined, Colors.red),
-          ),
-        ],
-      ),
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('courier_orders').snapshots(),
+      builder: (context, courierSnap) {
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('vendors').snapshots(),
+          builder: (context, vendorSnap) {
+            return StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('users').snapshots(),
+              builder: (context, userSnap) {
+                final courierDocs = courierSnap.data?.docs ?? [];
+                final userDocs = userSnap.data?.docs ?? [];
+
+                double totalRevenue = 0.0;
+                int completedOrders = 0;
+                int activeDelivery = 0;
+                int cancelledOrders = 0;
+
+                for (var doc in courierDocs) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final status = (data['status'] ?? '').toString().toLowerCase();
+                  final price = num.tryParse(data['delivery_price']?.toString() ?? '0')?.toDouble() ?? 0.0;
+
+                  if (status == 'delivered' || status == 'completed') {
+                    completedOrders++;
+                    totalRevenue += price;
+                  } else if (status == 'picked_up' || status == 'in_transit' || status == 'price_set') {
+                    activeDelivery++;
+                  } else if (status == 'cancelled') {
+                    cancelledOrders++;
+                  }
+                }
+
+                final totalOrdersCount = courierDocs.length;
+                final totalCustomersCount = userDocs.length;
+
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 160,
+                        child: _buildKpiCard('Total Revenue', '₹ ${totalRevenue.toStringAsFixed(0)}', '+12%', true, Icons.account_balance_wallet, Colors.orange),
+                      ),
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: 160,
+                        child: _buildKpiCard('Total Orders', '$totalOrdersCount', '${courierDocs.length} Live', true, Icons.receipt_long, Colors.purple),
+                      ),
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: 160,
+                        child: _buildKpiCard('Completed Orders', '$completedOrders', 'Delivered', true, Icons.check_circle_outline, Colors.green),
+                      ),
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: 160,
+                        child: _buildKpiCard('Total Customers', '$totalCustomersCount', 'Registered', true, Icons.people_alt_outlined, Colors.amber),
+                      ),
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: 170,
+                        child: _buildKpiCard('Active Delivery', '$activeDelivery', 'In Progress', true, Icons.two_wheeler, Colors.blue),
+                      ),
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: 160,
+                        child: _buildKpiCard('Cancelled Orders', '$cancelledOrders', '0%', false, Icons.cancel_outlined, Colors.red),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 
@@ -501,71 +544,109 @@ class CategoryCardsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          SizedBox(
-            width: 190,
-            child: _buildCategoryCard(
-              'Restaurant',
-              '0',
-              '₹ 0',
-              Icons.restaurant,
-              Colors.orange,
-              onTap: () => onNavigate?.call(2),
-            ),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 190,
-            child: _buildCategoryCard(
-              'Grocery',
-              '0',
-              '₹ 0',
-              Icons.local_grocery_store,
-              Colors.green,
-              onTap: () => onNavigate?.call(3),
-            ),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 190,
-            child: _buildCategoryCard(
-              'Pharmacy',
-              '0',
-              '₹ 0',
-              Icons.local_pharmacy,
-              Colors.blue,
-              onTap: () => onNavigate?.call(4),
-            ),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 190,
-            child: _buildCategoryCard(
-              'Pickup & Courier',
-              '0',
-              '₹ 0',
-              Icons.local_shipping,
-              Colors.amber,
-              onTap: () => onNavigate?.call(5),
-            ),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 190,
-            child: _buildCategoryCard(
-              'Electronics',
-              '0',
-              '₹ 0',
-              Icons.electrical_services,
-              Colors.grey.shade700,
-              onTap: () => onNavigate?.call(6),
-            ),
-          ),
-        ],
-      ),
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('vendors').snapshots(),
+      builder: (context, vendorSnap) {
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('courier_orders').snapshots(),
+          builder: (context, courierSnap) {
+            final vendorDocs = vendorSnap.data?.docs ?? [];
+            final courierDocs = courierSnap.data?.docs ?? [];
+
+            int restaurantCount = 0;
+            int groceryCount = 0;
+            int pharmacyCount = 0;
+            int electronicsCount = 0;
+
+            for (var doc in vendorDocs) {
+              final data = doc.data() as Map<String, dynamic>;
+              final cat = (data['category'] ?? '').toString().toLowerCase();
+              if (cat.contains('restaurant') || cat.contains('tiffin') || cat.contains('food')) {
+                restaurantCount++;
+              } else if (cat.contains('grocery')) {
+                groceryCount++;
+              } else if (cat.contains('pharmacy')) {
+                pharmacyCount++;
+              } else if (cat.contains('electronic') || cat.contains('service')) {
+                electronicsCount++;
+              }
+            }
+
+            double courierRevenue = 0.0;
+            for (var doc in courierDocs) {
+              final data = doc.data() as Map<String, dynamic>;
+              courierRevenue += num.tryParse(data['delivery_price']?.toString() ?? '0')?.toDouble() ?? 0.0;
+            }
+
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 190,
+                    child: _buildCategoryCard(
+                      'Restaurant',
+                      '$restaurantCount Partners',
+                      'Active',
+                      Icons.restaurant,
+                      Colors.orange,
+                      onTap: () => onNavigate?.call(2),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 190,
+                    child: _buildCategoryCard(
+                      'Grocery',
+                      '$groceryCount Partners',
+                      'Active',
+                      Icons.local_grocery_store,
+                      Colors.green,
+                      onTap: () => onNavigate?.call(3),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 190,
+                    child: _buildCategoryCard(
+                      'Pharmacy',
+                      '$pharmacyCount Partners',
+                      'Active',
+                      Icons.local_pharmacy,
+                      Colors.blue,
+                      onTap: () => onNavigate?.call(4),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 190,
+                    child: _buildCategoryCard(
+                      'Pickup & Courier',
+                      '${courierDocs.length} Orders',
+                      '₹ ${courierRevenue.toStringAsFixed(0)}',
+                      Icons.local_shipping,
+                      Colors.amber,
+                      onTap: () => onNavigate?.call(22),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 190,
+                    child: _buildCategoryCard(
+                      'Electronics',
+                      '$electronicsCount Partners',
+                      'Active',
+                      Icons.electrical_services,
+                      Colors.grey.shade700,
+                      onTap: () => onNavigate?.call(6),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -655,6 +736,17 @@ class LiveOrdersTable extends StatelessWidget {
   final Function(int)? onNavigate;
   const LiveOrdersTable({super.key, this.onNavigate});
 
+  static DateTime _parseDateTime(dynamic raw) {
+    if (raw == null) return DateTime.fromMillisecondsSinceEpoch(0);
+    if (raw is Timestamp) return raw.toDate();
+    if (raw is String) {
+      try {
+        return DateTime.parse(raw);
+      } catch (_) {}
+    }
+    return DateTime.fromMillisecondsSinceEpoch(0);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -676,55 +768,117 @@ class LiveOrdersTable extends StatelessWidget {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
                 ),
                 TextButton(
-                  onPressed: () => onNavigate?.call(10),
-                  child: const Text('View All Orders →', style: TextStyle(color: Color(0xFFFF6D00))),
+                  onPressed: () => onNavigate?.call(22),
+                  child: const Text('View All Orders →', style: TextStyle(color: Color(0xFFFF6D00), fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
           ),
           const Divider(height: 1),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SizedBox(
-                  width: constraints.maxWidth > 800 ? constraints.maxWidth : 800,
-                  child: Column(
-                    children: [
-                      // Table Header
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        child: Row(
-                          children: const [
-                            Expanded(flex: 2, child: Text('Order ID', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
-                            Expanded(flex: 2, child: Text('Type', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
-                            Expanded(flex: 2, child: Text('Customer', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
-                            Expanded(flex: 2, child: Text('Partner', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
-                            Expanded(flex: 2, child: Text('Status', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
-                            Expanded(flex: 1, child: Text('Time', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
-                            Expanded(flex: 1, child: Text('Amount', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
-                          ],
-                        ),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('courier_orders').snapshots(),
+            builder: (context, snapshot) {
+              final docs = snapshot.data?.docs ?? [];
+              final sortedDocs = List<QueryDocumentSnapshot>.from(docs);
+              sortedDocs.sort((a, b) {
+                final aData = a.data() as Map<String, dynamic>;
+                final bData = b.data() as Map<String, dynamic>;
+                final aTime = _parseDateTime(aData['timestamp'] ?? aData['createdAt']);
+                final bTime = _parseDateTime(bData['timestamp'] ?? bData['createdAt']);
+                return bTime.compareTo(aTime);
+              });
+
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: constraints.maxWidth > 800 ? constraints.maxWidth : 800,
+                      child: Column(
+                        children: [
+                          // Table Header
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            child: Row(
+                              children: const [
+                                Expanded(flex: 2, child: Text('Order ID', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
+                                Expanded(flex: 2, child: Text('Type', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
+                                Expanded(flex: 2, child: Text('Customer', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
+                                Expanded(flex: 2, child: Text('Partner', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
+                                Expanded(flex: 2, child: Text('Status', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
+                                Expanded(flex: 1, child: Text('Time', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
+                                Expanded(flex: 1, child: Text('Amount', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600))),
+                              ],
+                            ),
+                          ),
+                          const Divider(height: 1),
+                          if (sortedDocs.isEmpty)
+                            const Padding(
+                              padding: EdgeInsets.all(40.0),
+                              child: Center(
+                                child: Text('No live orders at the moment.', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                              ),
+                            )
+                          else
+                            ...sortedDocs.take(6).map((doc) {
+                              final data = doc.data() as Map<String, dynamic>;
+                              final orderId = '#${doc.id.substring(0, doc.id.length > 8 ? 8 : doc.id.length)}';
+                              final type = (data['category'] ?? 'Courier').toString();
+                              final customer = (data['sender_name'] ?? data['customerName'] ?? 'Customer').toString();
+                              final partner = (data['delivery_agent_name'] != null && data['delivery_agent_name'].toString().isNotEmpty)
+                                  ? data['delivery_agent_name'].toString()
+                                  : 'Unassigned';
+                              final rawStatus = (data['status'] ?? 'pending_review').toString();
+                              final status = rawStatus.replaceAll('_', ' ').toUpperCase();
+                              
+                              Color statusColor = Colors.orange;
+                              if (rawStatus == 'delivered' || rawStatus == 'completed') {
+                                statusColor = Colors.green;
+                              } else if (rawStatus == 'price_set') {
+                                statusColor = Colors.blue;
+                              } else if (rawStatus == 'picked_up' || rawStatus == 'in_transit') {
+                                statusColor = Colors.amber.shade800;
+                              } else if (rawStatus == 'cancelled') {
+                                statusColor = Colors.red;
+                              }
+
+                              final dt = _parseDateTime(data['timestamp'] ?? data['createdAt']);
+                              final timeStr = dt.millisecondsSinceEpoch == 0
+                                  ? 'Recent'
+                                  : DateFormat('hh:mm a').format(dt);
+
+                              final price = num.tryParse(data['delivery_price']?.toString() ?? '0')?.toDouble() ?? 0.0;
+                              final amountStr = '₹ ${price.toStringAsFixed(0)}';
+
+                              return InkWell(
+                                onTap: () => onNavigate?.call(22),
+                                child: _buildOrderRow(
+                                  orderId,
+                                  type,
+                                  Icons.local_shipping,
+                                  Colors.amber,
+                                  customer,
+                                  partner,
+                                  status,
+                                  statusColor,
+                                  timeStr,
+                                  amountStr,
+                                ),
+                              );
+                            }),
+                          const SizedBox(height: 12),
+                        ],
                       ),
-                  const Divider(height: 1),
-                  // Empty state for now
-                  const Padding(
-                    padding: EdgeInsets.all(40.0),
-                    child: Center(
-                      child: Text('No live orders at the moment.', style: TextStyle(color: Colors.grey, fontSize: 16)),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-              ),
-            ),
-          );
-        },
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
-    ],
-  ),
-);
-}
+    );
+  }
 
   Widget _buildOrderRow(String id, String type, IconData icon, Color iconColor, String customer, String partner, String status, Color statusColor, String time, String amount) {
     return Padding(
@@ -805,17 +959,42 @@ class LiveActivityWidget extends StatelessWidget {
             children: [
               const Text('Live Activity', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
               TextButton(
-                onPressed: () => onNavigate?.call(1),
+                onPressed: () => onNavigate?.call(22),
                 child: const Text('View all', style: TextStyle(fontSize: 12)),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24.0),
-            child: Center(
-              child: Text('No recent activity.', style: TextStyle(color: Colors.grey)),
-            ),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('courier_orders').snapshots(),
+            builder: (context, snapshot) {
+              final docs = snapshot.data?.docs ?? [];
+              if (docs.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24.0),
+                  child: Center(
+                    child: Text('No recent activity.', style: TextStyle(color: Colors.grey)),
+                  ),
+                );
+              }
+
+              return Column(
+                children: docs.take(4).map((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final idShort = doc.id.substring(0, doc.id.length > 6 ? 6 : doc.id.length);
+                  final sender = data['sender_name'] ?? 'Customer';
+                  final status = (data['status'] ?? 'pending').toString().replaceAll('_', ' ');
+
+                  return _buildActivityItem(
+                    Icons.local_shipping,
+                    Colors.amber,
+                    'Courier Order #$idShort',
+                    '$sender • $status',
+                    'Live',
+                  );
+                }).toList(),
+              );
+            },
           ),
         ],
       ),

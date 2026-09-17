@@ -33,8 +33,9 @@ class _AdminCourierOrdersScreenState extends State<AdminCourierOrdersScreen> wit
   }
 
   void _showAdminPriceDialog(BuildContext context, String orderId, Map<String, dynamic> data) {
+    final currentPrice = num.tryParse(data['delivery_price']?.toString() ?? '0')?.toDouble() ?? 0.0;
     final priceController = TextEditingController(
-      text: ((data['delivery_price'] as num?)?.toDouble() ?? 0.0) > 0 ? (data['delivery_price']).toString() : '',
+      text: currentPrice > 0 ? (data['delivery_price']).toString() : '',
     );
     Map<String, String>? selectedAgent = _defaultAgents.first;
 
@@ -221,7 +222,7 @@ class _AdminCourierOrdersScreenState extends State<AdminCourierOrdersScreen> wit
     final senderPhone = data['sender_phone'] ?? '-';
     final receiverName = data['receiver_name'] ?? 'Receiver';
     final receiverPhone = data['receiver_phone'] ?? '-';
-    final price = (data['delivery_price'] as num?)?.toDouble() ?? 0.0;
+    final price = num.tryParse(data['delivery_price']?.toString() ?? '0')?.toDouble() ?? 0.0;
     final agentName = data['delivery_agent_name'] ?? '';
     final agentPhone = data['delivery_agent_phone'] ?? '';
     final imageUrl = data['image_url'] ?? '';
@@ -426,15 +427,30 @@ class _AdminCourierOrdersScreenState extends State<AdminCourierOrdersScreen> wit
     );
   }
 
+  static DateTime _parseDate(dynamic raw) {
+    if (raw == null) return DateTime.fromMillisecondsSinceEpoch(0);
+    if (raw is Timestamp) return raw.toDate();
+    if (raw is String) {
+      try {
+        return DateTime.parse(raw);
+      } catch (_) {}
+    }
+    return DateTime.fromMillisecondsSinceEpoch(0);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: const Text('Admin Courier Operations Center'),
         backgroundColor: Colors.amber.shade800,
-        foregroundColor: Colors.white,
-        elevation: 0,
+        title: const Text('Courier Orders Management (Admin)', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: () => setState(() {}),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
@@ -449,10 +465,18 @@ class _AdminCourierOrdersScreenState extends State<AdminCourierOrdersScreen> wit
         ),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: _db.collection('courier_orders').orderBy('timestamp', descending: true).snapshots(),
+        stream: _db.collection('courier_orders').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Text('Error loading courier requests: ${snapshot.error}', style: const TextStyle(color: Colors.red, fontSize: 16)),
+              ),
+            );
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
@@ -467,7 +491,15 @@ class _AdminCourierOrdersScreenState extends State<AdminCourierOrdersScreen> wit
             );
           }
 
-          final allDocs = snapshot.data!.docs;
+          final allDocs = List<DocumentSnapshot>.from(snapshot.data!.docs);
+          allDocs.sort((a, b) {
+            final aData = a.data() as Map<String, dynamic>;
+            final bData = b.data() as Map<String, dynamic>;
+            final aTime = _parseDate(aData['timestamp'] ?? aData['createdAt']);
+            final bTime = _parseDate(bData['timestamp'] ?? bData['createdAt']);
+            return bTime.compareTo(aTime);
+          });
+
           final pendingDocs = allDocs.where((d) => (d.data() as Map<String, dynamic>)['status'] == 'pending_review').toList();
           final assignedDocs = allDocs.where((d) => (d.data() as Map<String, dynamic>)['status'] == 'price_set').toList();
           final deliveredDocs = allDocs.where((d) => (d.data() as Map<String, dynamic>)['status'] == 'delivered').toList();

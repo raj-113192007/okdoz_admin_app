@@ -19,9 +19,28 @@ class UsersListScreen extends StatefulWidget {
   State<UsersListScreen> createState() => _UsersListScreenState();
 }
 
+DateTime _parseDate(dynamic raw) {
+  if (raw == null) return DateTime.fromMillisecondsSinceEpoch(0);
+  if (raw is Timestamp) return raw.toDate();
+  if (raw is int) {
+    if (raw > 1000000000000) {
+      return DateTime.fromMillisecondsSinceEpoch(raw);
+    } else {
+      return DateTime.fromMillisecondsSinceEpoch(raw * 1000);
+    }
+  }
+  if (raw is String) {
+    try {
+      return DateTime.parse(raw);
+    } catch (_) {}
+  }
+  return DateTime.fromMillisecondsSinceEpoch(0);
+}
+
 class _UsersListScreenState extends State<UsersListScreen> {
   String _selectedStatus = 'All';
   final List<String> _statuses = ['All', 'Active', 'Pending', 'Blocked'];
+
 
   void _showAddUserDialog(BuildContext context) {
     final nameCtrl = TextEditingController();
@@ -77,13 +96,13 @@ class _UsersListScreenState extends State<UsersListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Query query = FirebaseFirestore.instance.collection(widget.collectionName).orderBy('createdAt', descending: true);
+    Query query = FirebaseFirestore.instance.collection(widget.collectionName);
     if (_selectedStatus == 'Pending') {
-      query = FirebaseFirestore.instance.collection(widget.collectionName).where('status', whereIn: ['Pending', 'pending', 'pending_approval']);
+      query = query.where('status', whereIn: ['Pending', 'pending', 'pending_approval']);
     } else if (_selectedStatus == 'Active') {
-      query = FirebaseFirestore.instance.collection(widget.collectionName).where('status', whereIn: ['Active', 'active', 'approved']);
+      query = query.where('status', whereIn: ['Active', 'active', 'approved']);
     } else if (_selectedStatus != 'All') {
-      query = FirebaseFirestore.instance.collection(widget.collectionName).where('status', isEqualTo: _selectedStatus);
+      query = query.where('status', isEqualTo: _selectedStatus);
     }
 
     return Column(
@@ -209,37 +228,48 @@ class _UsersListScreenState extends State<UsersListScreen> {
                                         return const Center(child: CircularProgressIndicator());
                                       }
 
-                                      final users = snapshot.data?.docs ?? [];
-                                      if (users.isEmpty) {
-                                        return const Center(child: Text('No users found under this status.'));
-                                      }
+                                       final rawUsers = snapshot.data?.docs ?? [];
+                                       final users = List<DocumentSnapshot>.from(rawUsers);
+                                       users.sort((a, b) {
+                                         final aData = a.data() as Map<String, dynamic>;
+                                         final bData = b.data() as Map<String, dynamic>;
+                                         final aTime = _parseDate(aData['createdAt'] ?? aData['timestamp']);
+                                         final bTime = _parseDate(bData['createdAt'] ?? bData['timestamp']);
+                                         return bTime.compareTo(aTime);
+                                       });
 
-                                      return ListView.separated(
-                                        itemCount: users.length,
-                                        separatorBuilder: (context, index) => const Divider(height: 1),
-                                        itemBuilder: (context, index) {
-                                          final userData = users[index].data() as Map<String, dynamic>;
-                                          final name = userData['displayName'] ?? userData['name'] ?? 'Unknown User';
-                                          final email = userData['deviceInfo'] ?? userData['email'] ?? 'No Device Info';
-                                          final phone = userData['phoneNumber'] ?? userData['phone'] ?? 'No Phone';
-                                          final status = userData['status'] ?? 'Active';
-                                          
-                                          String joinDate = 'Unknown';
-                                          if (userData['createdAt'] != null) {
-                                            final timestamp = userData['createdAt'] as Timestamp;
-                                            joinDate = DateFormat('dd MMM, yyyy').format(timestamp.toDate());
-                                          }
+                                       if (users.isEmpty) {
+                                         return const Center(child: Text('No users found under this status.'));
+                                       }
 
-                                          return _AnimatedUserRow(
-                                            name: name,
-                                            email: email,
-                                            phone: phone,
-                                            date: joinDate,
-                                            status: status,
-                                            onTapDetails: () => _showUserDetailsDialog(context, users[index], widget.collectionName),
-                                          );
-                                        },
-                                      );
+                                       return ListView.separated(
+                                         itemCount: users.length,
+                                         separatorBuilder: (context, index) => const Divider(height: 1),
+                                         itemBuilder: (context, index) {
+                                           final userData = users[index].data() as Map<String, dynamic>;
+                                           final name = userData['displayName'] ?? userData['name'] ?? 'Unknown User';
+                                           final email = userData['deviceInfo'] ?? userData['email'] ?? 'No Device Info';
+                                           final phone = userData['phoneNumber'] ?? userData['phone'] ?? 'No Phone';
+                                           final status = userData['status'] ?? 'Active';
+                                           
+                                           String joinDate = 'Unknown';
+                                           if (userData['createdAt'] != null) {
+                                             final dt = _parseDate(userData['createdAt']);
+                                             if (dt.millisecondsSinceEpoch > 0) {
+                                               joinDate = DateFormat('dd MMM, yyyy').format(dt);
+                                             }
+                                           }
+
+                                           return _AnimatedUserRow(
+                                             name: name,
+                                             email: email,
+                                             phone: phone,
+                                             date: joinDate,
+                                             status: status,
+                                             onTapDetails: () => _showUserDetailsDialog(context, users[index], widget.collectionName),
+                                           );
+                                         },
+                                       );
                                     },
                                   ),
                                 ),
@@ -292,7 +322,10 @@ class _AnimatedUserRowState extends State<_AnimatedUserRow> {
                 children: [
                   CircleAvatar(
                     backgroundColor: Colors.blue.withValues(alpha: 0.1),
-                    child: Text(widget.name.substring(0, widget.name.isNotEmpty ? 1 : 1), style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      widget.name.trim().isNotEmpty ? widget.name.trim()[0].toUpperCase() : 'U',
+                      style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Column(
@@ -379,9 +412,11 @@ void _showUserDetailsDialog(BuildContext context, DocumentSnapshot userDoc, Stri
                       orders.sort((a, b) {
                         final aData = a.data() as Map<String, dynamic>;
                         final bData = b.data() as Map<String, dynamic>;
-                        final aTime = aData['created_at'] as Timestamp?;
-                        final bTime = bData['created_at'] as Timestamp?;
-                        if (aTime == null || bTime == null) return 0;
+                        final aTime = _parseDate(aData['created_at'] ?? aData['createdAt'] ?? aData['timestamp']);
+                        final bTime = _parseDate(bData['created_at'] ?? bData['createdAt'] ?? bData['timestamp']);
+                        if (aTime == null && bTime == null) return 0;
+                        if (aTime == null) return 1;
+                        if (bTime == null) return -1;
                         return bTime.compareTo(aTime);
                       });
 
@@ -392,10 +427,10 @@ void _showUserDetailsDialog(BuildContext context, DocumentSnapshot userDoc, Stri
                           final items = order['items'] as List<dynamic>? ?? [];
                           final itemNames = items.map((e) => '${e['qty'] ?? 1}x ${e['name']}').join(', ');
                           
-                          String dateStr = 'Unknown';
-                          if (order['created_at'] != null) {
-                            dateStr = DateFormat('dd MMM, yyyy - hh:mm a').format((order['created_at'] as Timestamp).toDate());
-                          }
+                          final parsedOrderDate = _parseDate(order['created_at'] ?? order['createdAt'] ?? order['timestamp']);
+                          final dateStr = parsedOrderDate != null
+                              ? DateFormat('dd MMM, yyyy - hh:mm a').format(parsedOrderDate)
+                              : 'Unknown';
                           
                           return Card(
                             margin: const EdgeInsets.only(bottom: 8),
