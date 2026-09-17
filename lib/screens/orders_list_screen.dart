@@ -430,18 +430,18 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (isCourier) ...[
-                    Text('Parcel Category: ${data['parcel_category'] ?? data['parcel_type'] ?? 'Parcel'}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Parcel Category: ${data['parcel_category'] ?? data['parcel_type'] ?? data['category'] ?? 'Parcel'}', style: const TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     Text('Weight: ${data['weight'] ?? 'Standard'}'),
                     const SizedBox(height: 8),
-                    Text('Sender: ${data['sender_address']?['name'] ?? data['sender_name'] ?? 'N/A'} (${data['sender_address']?['phone'] ?? data['sender_phone'] ?? 'N/A'})'),
-                    Text('Pickup: ${data['sender_address']?['address'] ?? 'N/A'}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                    Text('Sender: ${data['sender_address']?['name'] ?? data['sender_name'] ?? data['user_name'] ?? 'N/A'} (${data['sender_address']?['phone'] ?? data['sender_phone'] ?? 'N/A'})'),
+                    Text('Pickup: ${data['pickup_address'] ?? data['sender_address']?['address'] ?? data['sender_address'] ?? 'N/A'}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
                     const SizedBox(height: 8),
-                    Text('Recipient: ${data['recipient_address']?['name'] ?? data['recipient_name'] ?? 'N/A'} (${data['recipient_address']?['phone'] ?? data['recipient_phone'] ?? 'N/A'})'),
-                    Text('Drop: ${data['recipient_address']?['address'] ?? 'N/A'}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                    Text('Recipient: ${data['recipient_address']?['name'] ?? data['receiver_name'] ?? data['recipient_name'] ?? 'N/A'} (${data['recipient_address']?['phone'] ?? data['receiver_phone'] ?? 'N/A'})'),
+                    Text('Drop: ${data['drop_address'] ?? data['recipient_address']?['address'] ?? data['recipient_address'] ?? 'N/A'}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
                     const SizedBox(height: 8),
-                    if (data['instructions'] != null && data['instructions'].toString().isNotEmpty)
-                      Text('Note: ${data['instructions']}', style: const TextStyle(fontStyle: FontStyle.italic)),
+                    if ((data['instruction'] ?? data['instructions']) != null && (data['instruction'] ?? data['instructions']).toString().isNotEmpty)
+                      Text('Note: ${data['instruction'] ?? data['instructions']}', style: const TextStyle(fontStyle: FontStyle.italic)),
                     const SizedBox(height: 8),
                     Text('Delivery Price: ₹${amount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
                   ] else ...[

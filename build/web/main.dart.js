@@ -100730,52 +100730,60 @@ $0(){var s=this
 s.a.anx(s.b,B.b.gak(s.c.b.b.a),s.d,s.e,s.f,s.r)},
 $S:0}
 A.azL.prototype={
-$1(a){var s,r,q,p,o,n,m,l,k=this,j=null,i="sender_address",h="N/A",g="recipient_address",f="instructions",e=k.b,d=e.length
-e=A.Z("Order Details (#"+B.c.ad(e,0,d>8?8:d).toUpperCase()+")",j,j,j,j,j,j,j)
-d=t.p
-s=A.b([],d)
+$1(a){var s,r,q,p,o,n,m,l,k=this,j=null,i="sender_address",h="N/A",g="recipient_address",f="instruction",e="instructions",d=k.b,c=d.length
+d=A.Z("Order Details (#"+B.c.ad(d,0,c>8?8:c).toUpperCase()+")",j,j,j,j,j,j,j)
+c=t.p
+s=A.b([],c)
 r=k.d
 if(k.c){q=r.h(0,"parcel_category")
 if(q==null)q=r.h(0,"parcel_type")
+if(q==null)q=r.h(0,"category")
 q=A.Z("Parcel Category: "+A.k(q==null?"Parcel":q),j,j,j,j,B.e1,j,j)
 p=r.h(0,"weight")
 p=A.Z("Weight: "+A.k(p==null?"Standard":p),j,j,j,j,j,j,j)
 o=r.h(0,i)
 o=o==null?j:J.eQ(o,"name")
 if(o==null)o=r.h(0,"sender_name")
+if(o==null)o=r.h(0,"user_name")
 o=A.k(o==null?h:o)
 n=r.h(0,i)
 n=n==null?j:J.eQ(n,"phone")
 if(n==null)n=r.h(0,"sender_phone")
 o=A.Z("Sender: "+o+" ("+A.k(n==null?h:n)+")",j,j,j,j,j,j,j)
-n=r.h(0,i)
-n=n==null?j:J.eQ(n,"address")
+n=r.h(0,"pickup_address")
+if(n==null){n=r.h(0,i)
+n=n==null?j:J.eQ(n,"address")}if(n==null)n=r.h(0,i)
 n=A.Z("Pickup: "+A.k(n==null?h:n),j,j,j,j,B.cV,j,j)
 m=r.h(0,g)
 m=m==null?j:J.eQ(m,"name")
+if(m==null)m=r.h(0,"receiver_name")
 if(m==null)m=r.h(0,"recipient_name")
 m=A.k(m==null?h:m)
 l=r.h(0,g)
 l=l==null?j:J.eQ(l,"phone")
-if(l==null)l=r.h(0,"recipient_phone")
+if(l==null)l=r.h(0,"receiver_phone")
 m=A.Z("Recipient: "+m+" ("+A.k(l==null?h:l)+")",j,j,j,j,j,j,j)
-l=r.h(0,g)
-l=l==null?j:J.eQ(l,"address")
-q=A.b([q,B.aR,p,B.aR,o,n,B.aR,m,A.Z("Drop: "+A.k(l==null?h:l),j,j,j,j,B.cV,j,j),B.aR],d)
-if(r.h(0,f)!=null&&J.bC(r.h(0,f)).length!==0)q.push(A.Z("Note: "+A.k(r.h(0,f)),j,j,j,j,B.a0N,j,j))
-q.push(B.aR)
+l=r.h(0,"drop_address")
+if(l==null){l=r.h(0,g)
+l=l==null?j:J.eQ(l,"address")}if(l==null)l=r.h(0,g)
+q=A.b([q,B.aR,p,B.aR,o,n,B.aR,m,A.Z("Drop: "+A.k(l==null?h:l),j,j,j,j,B.cV,j,j),B.aR],c)
+p=r.h(0,f)
+if((p==null?r.h(0,e):p)!=null){p=r.h(0,f)
+p=J.bC(p==null?r.h(0,e):p).length!==0}else p=!1
+if(p){p=r.h(0,f)
+q.push(A.Z("Note: "+A.k(p==null?r.h(0,e):p),j,j,j,j,B.a0N,j,j))}q.push(B.aR)
 q.push(A.Z("Delivery Price: \u20b9"+B.d.ab(k.e,2),j,j,j,j,B.e1,j,j))
 B.b.M(s,q)}else{q=r.h(0,"customerName")
 q=A.Z("Customer: "+A.k(q==null?"John Doe":q),j,j,j,j,B.e1,j,j)
 p=r.h(0,"merchantName")
 p=A.Z("Merchant: "+A.k(p==null?"Store":p),j,j,j,j,j,j,j)
 r=r.h(0,"orderType")
-B.b.M(s,A.b([q,B.aR,p,B.aR,A.Z("Type: "+A.k(r==null?"Food Delivery":r),j,j,j,j,j,j,j),B.aR,A.Z("Amount: \u20b9"+B.d.ab(k.e,2),j,j,j,j,j,j,j)],d))}s.push(B.aR)
+B.b.M(s,A.b([q,B.aR,p,B.aR,A.Z("Type: "+A.k(r==null?"Food Delivery":r),j,j,j,j,j,j,j),B.aR,A.Z("Amount: \u20b9"+B.d.ab(k.e,2),j,j,j,j,j,j,j)],c))}s.push(B.aR)
 r=k.a
 q=k.f
 s.push(A.Z("Current Status: "+r.Gy(q),j,j,j,j,A.bX(j,j,r.Ss(q),j,j,j,j,j,j,j,j,j,j,j,B.E,j,j,!0,j,j,j,j,j,j,j,j),j,j))
 s=A.fT(A.aI(s,B.x,B.i,B.aB),j,B.S,j,j,B.aa)
-return A.MV(A.b([A.jj(B.Dr,new A.azK(a),j)],d),new A.ex(B.EX,s,j),e)},
+return A.MV(A.b([A.jj(B.Dr,new A.azK(a),j)],c),new A.ex(B.EX,s,j),d)},
 $S:63}
 A.azK.prototype={
 $0(){A.dd(this.a,!1).eQ(null)
