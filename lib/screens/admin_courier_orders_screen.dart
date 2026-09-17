@@ -92,20 +92,30 @@ class _AdminCourierOrdersScreenState extends State<AdminCourierOrdersScreen> wit
               const Text('Assign Delivery Agent', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
               const SizedBox(height: 8),
               StreamBuilder<QuerySnapshot>(
-                stream: _db.collection('delivery_agents').snapshots(),
+                stream: _db.collection('delivery_partners').snapshots(),
                 builder: (context, snapshot) {
                   List<Map<String, String>> agentsList = [..._defaultAgents];
 
                   if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
                     final firestoreAgents = snapshot.data!.docs.map((doc) {
                       final d = doc.data() as Map<String, dynamic>;
+                      final status = (d['status'] ?? '').toString().toLowerCase();
+                      final isApproved = status == 'active' || status == 'approved';
+                      final name = (d['name'] ?? d['displayName'] ?? 'Delivery Boy').toString();
+                      final phone = (d['phone'] ?? d['phoneNumber'] ?? '+91 9000000000').toString();
+                      final vehicle = (d['vehicleType'] ?? 'Bike').toString();
                       return {
                         'id': doc.id,
-                        'name': (d['name'] ?? 'Delivery Boy').toString(),
-                        'phone': (d['phone'] ?? '+91 9000000000').toString(),
+                        'name': isApproved ? name : '$name [Pending Approval]',
+                        'phone': phone,
+                        'vehicle': vehicle,
                       };
                     }).toList();
                     agentsList = [...firestoreAgents, ..._defaultAgents];
+                  }
+
+                  if (!agentsList.any((a) => a['id'] == selectedAgent?['id'])) {
+                    selectedAgent = agentsList.isNotEmpty ? agentsList.first : null;
                   }
 
                   return Container(
@@ -126,7 +136,13 @@ class _AdminCourierOrdersScreenState extends State<AdminCourierOrdersScreen> wit
                               children: [
                                 const Icon(Icons.two_wheeler, color: Colors.amber, size: 20),
                                 const SizedBox(width: 10),
-                                Text('${agent['name']} (${agent['phone']})', style: const TextStyle(fontSize: 14)),
+                                Expanded(
+                                  child: Text(
+                                    '${agent['name']} (${agent['phone']}) - ${agent['vehicle'] ?? 'Bike'}',
+                                    style: const TextStyle(fontSize: 14),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
                               ],
                             ),
                           );

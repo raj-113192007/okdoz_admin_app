@@ -78,7 +78,11 @@ class _UsersListScreenState extends State<UsersListScreen> {
   @override
   Widget build(BuildContext context) {
     Query query = FirebaseFirestore.instance.collection(widget.collectionName).orderBy('createdAt', descending: true);
-    if (_selectedStatus != 'All') {
+    if (_selectedStatus == 'Pending') {
+      query = FirebaseFirestore.instance.collection(widget.collectionName).where('status', whereIn: ['Pending', 'pending', 'pending_approval']);
+    } else if (_selectedStatus == 'Active') {
+      query = FirebaseFirestore.instance.collection(widget.collectionName).where('status', whereIn: ['Active', 'active', 'approved']);
+    } else if (_selectedStatus != 'All') {
       query = FirebaseFirestore.instance.collection(widget.collectionName).where('status', isEqualTo: _selectedStatus);
     }
 
@@ -432,11 +436,14 @@ void _showUserDetailsDialog(BuildContext context, DocumentSnapshot userDoc, Stri
           ),
         ),
         actions: [
-          if (orderFilterField != null && (userData['status'] == 'pending' || userData['status'] == 'Pending'))
+          if (collectionName != 'users' && (userData['status'] == 'pending' || userData['status'] == 'Pending' || userData['status'] == 'pending_approval'))
             ElevatedButton(
               onPressed: () async {
                 try {
-                  await FirebaseFirestore.instance.collection(collectionName).doc(userDoc.id).update({'status': 'approved'});
+                  await FirebaseFirestore.instance.collection(collectionName).doc(userDoc.id).update({
+                    'status': 'approved',
+                    'updatedAt': FieldValue.serverTimestamp(),
+                  });
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Approved successfully!'), backgroundColor: Colors.green));
                     Navigator.pop(context);

@@ -27,7 +27,7 @@ class _SidebarWidgetState extends State<SidebarWidget> {
   bool _isSystemExpanded = false;
 
   bool get _isApprovalSelected => widget.selectedIndex >= 1 && widget.selectedIndex <= 9;
-  bool get _isManagementSelected => widget.selectedIndex >= 10 && widget.selectedIndex <= 14;
+  bool get _isManagementSelected => (widget.selectedIndex >= 10 && widget.selectedIndex <= 14) || widget.selectedIndex == 22;
   bool get _isFinanceSelected => widget.selectedIndex >= 15 && widget.selectedIndex <= 18;
   bool get _isSystemSelected => widget.selectedIndex >= 19 && widget.selectedIndex <= 21;
 
@@ -259,6 +259,14 @@ class _SidebarWidgetState extends State<SidebarWidget> {
                         isCollapsed: widget.isCollapsed,
                         selectedIndex: widget.selectedIndex,
                         onTap: () => widget.onItemSelected(10),
+                      ),
+                      _NavItem(
+                        index: 22,
+                        icon: Icons.local_shipping_outlined,
+                        title: 'Courier Orders',
+                        isCollapsed: widget.isCollapsed,
+                        selectedIndex: widget.selectedIndex,
+                        onTap: () => widget.onItemSelected(22),
                       ),
                       _NavItem(
                         index: 11,
