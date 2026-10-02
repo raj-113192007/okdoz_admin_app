@@ -377,9 +377,13 @@ void _showUserDetailsDialog(BuildContext context, DocumentSnapshot userDoc, Stri
   final name = userData['displayName'] ?? userData['name'] ?? 'Unknown User';
   
   String? orderFilterField;
-  if (collectionName == 'users') orderFilterField = 'user_id';
-  else if (collectionName == 'delivery_partners') orderFilterField = 'delivery_partner_id';
-  else if (collectionName == 'merchants' || collectionName == 'restaurants') orderFilterField = 'vendor_id';
+  if (collectionName == 'users') {
+    orderFilterField = 'user_id';
+  } else if (collectionName == 'delivery_partners') {
+    orderFilterField = 'delivery_partner_id';
+  } else if (collectionName == 'merchants' || collectionName == 'restaurants') {
+    orderFilterField = 'vendor_id';
+  }
 
   showDialog(
     context: context,

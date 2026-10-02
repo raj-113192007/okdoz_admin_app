@@ -300,6 +300,15 @@ class _SidebarWidgetState extends State<SidebarWidget> {
                         selectedIndex: widget.selectedIndex,
                         onTap: () => widget.onItemSelected(14),
                       ),
+                      _NavItem(
+                        index: 23,
+                        icon: Icons.key_outlined,
+                        title: 'Partner & Rider Logins',
+                        badgeColor: Colors.amber,
+                        isCollapsed: widget.isCollapsed,
+                        selectedIndex: widget.selectedIndex,
+                        onTap: () => widget.onItemSelected(23),
+                      ),
                     ],
 
                     const SizedBox(height: 6),

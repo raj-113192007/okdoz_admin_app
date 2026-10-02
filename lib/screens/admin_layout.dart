@@ -8,6 +8,7 @@ import 'users_list_screen.dart';
 import 'finance_screen.dart';
 import 'settings_screen.dart';
 import 'admin_courier_orders_screen.dart';
+import 'partner_credentials_screen.dart';
 
 class AdminLayout extends StatefulWidget {
   const AdminLayout({super.key});
@@ -109,6 +110,8 @@ class _AdminLayoutState extends State<AdminLayout> {
         return const SettingsScreen(key: ValueKey(21));
       case 22:
         return const AdminCourierOrdersScreen(key: ValueKey(22));
+      case 23:
+        return const PartnerCredentialsScreen(key: ValueKey(23));
 
       default:
         return PlaceholderScreen(title: 'Screen $index', key: ValueKey(index));
