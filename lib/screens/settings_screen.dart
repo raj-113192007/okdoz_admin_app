@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../widgets/dashboard_widgets.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -182,32 +183,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
             isMobile
                 ? Column(
                     children: [
-                      _buildTextField('First Name', _firstNameCtrl),
+                      _buildTextField('First Name', _firstNameCtrl, maxLength: 50),
                       const SizedBox(height: 24),
-                      _buildTextField('Last Name', _lastNameCtrl),
+                      _buildTextField('Last Name', _lastNameCtrl, maxLength: 50),
                     ],
                   )
                 : Row(
                     children: [
-                      Expanded(child: _buildTextField('First Name', _firstNameCtrl)),
+                      Expanded(child: _buildTextField('First Name', _firstNameCtrl, maxLength: 50)),
                       const SizedBox(width: 24),
-                      Expanded(child: _buildTextField('Last Name', _lastNameCtrl)),
+                      Expanded(child: _buildTextField('Last Name', _lastNameCtrl, maxLength: 50)),
                     ],
                   ),
             const SizedBox(height: 24),
             isMobile
                 ? Column(
                     children: [
-                      _buildTextField('Email Address', _emailCtrl),
+                      _buildTextField('Email Address', _emailCtrl, keyboardType: TextInputType.emailAddress, maxLength: 80),
                       const SizedBox(height: 24),
-                      _buildTextField('Phone Number', _phoneCtrl),
+                      _buildTextField(
+                        'Phone Number',
+                        _phoneCtrl,
+                        keyboardType: TextInputType.phone,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(10),
+                        ],
+                        maxLength: 10,
+                      ),
                     ],
                   )
                 : Row(
                     children: [
-                      Expanded(child: _buildTextField('Email Address', _emailCtrl)),
+                      Expanded(child: _buildTextField('Email Address', _emailCtrl, keyboardType: TextInputType.emailAddress, maxLength: 80)),
                       const SizedBox(width: 24),
-                      Expanded(child: _buildTextField('Phone Number', _phoneCtrl)),
+                      Expanded(
+                        child: _buildTextField(
+                          'Phone Number',
+                          _phoneCtrl,
+                          keyboardType: TextInputType.phone,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(10),
+                          ],
+                          maxLength: 10,
+                        ),
+                      ),
                     ],
                   ),
           ] else ...[
@@ -244,6 +265,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
+                  if (_selectedIndex == 0) {
+                    final email = _emailCtrl.text.trim();
+                    final phone = _phoneCtrl.text.trim();
+                    if (email.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please enter a valid email address')),
+                      );
+                      return;
+                    }
+                    if (phone.isNotEmpty && !RegExp(r'^[6-9]\d{9}$').hasMatch(phone)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please enter a valid 10-digit phone number')),
+                      );
+                      return;
+                    }
+                  }
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('$title saved successfully!'), backgroundColor: Colors.green),
                   );
@@ -262,7 +299,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    int? maxLength,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -270,6 +313,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 8),
         TextField(
           controller: controller,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          maxLength: maxLength,
+          buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),

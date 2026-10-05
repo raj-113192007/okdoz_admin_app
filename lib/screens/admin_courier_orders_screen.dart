@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AdminCourierOrdersScreen extends StatefulWidget {
   const AdminCourierOrdersScreen({super.key});
@@ -77,7 +78,11 @@ class _AdminCourierOrdersScreenState extends State<AdminCourierOrdersScreen> wit
               // Price Field
               TextField(
                 controller: priceController,
-                keyboardType: TextInputType.number,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                  LengthLimitingTextInputFormatter(6),
+                ],
                 decoration: InputDecoration(
                   labelText: 'Delivery Fee / Price (₹)',
                   hintText: 'Enter price e.g. 150',

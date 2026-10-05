@@ -345,6 +345,8 @@ _Login karke live delivery duty start karein!_''';
                       height: 42,
                       child: TextField(
                         controller: _searchController,
+                        maxLength: 80,
+                        buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                         onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
                         decoration: InputDecoration(
                           hintText: 'Search name, phone or email...',

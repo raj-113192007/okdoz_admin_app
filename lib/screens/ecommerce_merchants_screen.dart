@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/dashboard_widgets.dart'; // For TopHeader
 
@@ -33,23 +34,53 @@ class _EcommerceMerchantsScreenState extends State<EcommerceMerchantsScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Store / Business Name')),
+            TextField(
+              controller: nameCtrl,
+              inputFormatters: [LengthLimitingTextInputFormatter(60)],
+              decoration: const InputDecoration(labelText: 'Store / Business Name'),
+            ),
             const SizedBox(height: 8),
-            TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Phone Number')),
+            TextField(
+              controller: phoneCtrl,
+              keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
+              decoration: const InputDecoration(labelText: 'Phone Number (10 digits)'),
+            ),
             const SizedBox(height: 8),
-            TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: 'Store Address')),
+            TextField(
+              controller: addressCtrl,
+              inputFormatters: [LengthLimitingTextInputFormatter(150)],
+              decoration: const InputDecoration(labelText: 'Store Address'),
+            ),
           ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () async {
-              if (nameCtrl.text.trim().isEmpty) return;
+              final name = nameCtrl.text.trim();
+              final phone = phoneCtrl.text.trim();
+              final address = addressCtrl.text.trim();
+              if (name.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter store name')),
+                );
+                return;
+              }
+              if (phone.isNotEmpty && !RegExp(r'^[6-9]\d{9}$').hasMatch(phone)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter a valid 10-digit phone number')),
+                );
+                return;
+              }
               try {
                 await FirebaseFirestore.instance.collection('vendors').add({
-                  'name': nameCtrl.text.trim(),
-                  'phone': phoneCtrl.text.trim(),
-                  'address': addressCtrl.text.trim(),
+                  'name': name,
+                  'phone': phone,
+                  'address': address,
                   'category': widget.title == 'All Merchants' ? 'Restaurant' : widget.title,
                   'status': 'active',
                   'rating': '5.0',

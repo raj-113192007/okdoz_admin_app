@@ -297,10 +297,12 @@ class _CommandPaletteDialogState extends State<CommandPaletteDialog> {
     {'title': 'Delivery Partner Approvals', 'category': 'Approvals', 'icon': Icons.two_wheeler_outlined, 'index': 8},
     {'title': 'Technician Approvals', 'category': 'Approvals', 'icon': Icons.build_circle_outlined, 'index': 9},
     {'title': 'Order Management', 'category': 'Management', 'icon': Icons.receipt_long_outlined, 'index': 10},
+    {'title': 'Courier Orders', 'category': 'Management', 'icon': Icons.local_shipping_outlined, 'index': 22},
     {'title': 'All Merchants List', 'category': 'Management', 'icon': Icons.store_mall_directory_outlined, 'index': 11},
     {'title': 'Customer Database', 'category': 'Management', 'icon': Icons.people_outline, 'index': 12},
     {'title': 'Delivery Partners List', 'category': 'Management', 'icon': Icons.badge_outlined, 'index': 13},
     {'title': 'Technicians List', 'category': 'Management', 'icon': Icons.engineering_outlined, 'index': 14},
+    {'title': 'Partner & Rider Logins', 'category': 'Management', 'icon': Icons.key_outlined, 'index': 23},
     {'title': 'Finance Overview', 'category': 'Finance', 'icon': Icons.account_balance_wallet_outlined, 'index': 15},
     {'title': 'Coupons & Discounts', 'category': 'Finance', 'icon': Icons.local_offer_outlined, 'index': 16},
     {'title': 'Settings & Configurations', 'category': 'System', 'icon': Icons.settings_outlined, 'index': 20},
@@ -332,6 +334,8 @@ class _CommandPaletteDialogState extends State<CommandPaletteDialog> {
                   child: TextField(
                     controller: _searchController,
                     autofocus: true,
+                    maxLength: 100,
+                    buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
                     onChanged: (val) => setState(() => _query = val),
                     decoration: const InputDecoration(
                       hintText: 'Type to search pages, orders, or merchants...',

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../widgets/sidebar_widget.dart';
 import 'dashboard_content.dart';
@@ -171,7 +172,7 @@ class _AdminLayoutState extends State<AdminLayout> {
             child: IndexedStack(
               index: _selectedIndex,
               children: List.generate(
-                22, // Total number of screens (0 to 21)
+                math.max(24, _selectedIndex + 1),
                 (index) => _getScreenForIndex(index),
               ),
             ),

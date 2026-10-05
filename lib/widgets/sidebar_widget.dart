@@ -27,7 +27,7 @@ class _SidebarWidgetState extends State<SidebarWidget> {
   bool _isSystemExpanded = false;
 
   bool get _isApprovalSelected => widget.selectedIndex >= 1 && widget.selectedIndex <= 9;
-  bool get _isManagementSelected => (widget.selectedIndex >= 10 && widget.selectedIndex <= 14) || widget.selectedIndex == 22;
+  bool get _isManagementSelected => (widget.selectedIndex >= 10 && widget.selectedIndex <= 14) || widget.selectedIndex == 22 || widget.selectedIndex == 23;
   bool get _isFinanceSelected => widget.selectedIndex >= 15 && widget.selectedIndex <= 18;
   bool get _isSystemSelected => widget.selectedIndex >= 19 && widget.selectedIndex <= 21;
 
@@ -446,6 +446,15 @@ class _SidebarWidgetState extends State<SidebarWidget> {
                         const Text(
                           'Logout',
                           style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+                        ),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text('v1.1.0', style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ],

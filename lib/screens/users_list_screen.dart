@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../widgets/dashboard_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -54,25 +55,62 @@ class _UsersListScreenState extends State<UsersListScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Full Name')),
+            TextField(
+              controller: nameCtrl,
+              inputFormatters: [LengthLimitingTextInputFormatter(50)],
+              decoration: const InputDecoration(labelText: 'Full Name'),
+            ),
             const SizedBox(height: 8),
-            TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Phone Number')),
+            TextField(
+              controller: phoneCtrl,
+              keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
+              decoration: const InputDecoration(labelText: 'Phone Number (10 digits)'),
+            ),
             const SizedBox(height: 8),
-            TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: 'Email Address')),
+            TextField(
+              controller: emailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              inputFormatters: [LengthLimitingTextInputFormatter(80)],
+              decoration: const InputDecoration(labelText: 'Email Address'),
+            ),
           ],
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () async {
-              if (nameCtrl.text.trim().isEmpty) return;
+              final name = nameCtrl.text.trim();
+              final phone = phoneCtrl.text.trim();
+              final email = emailCtrl.text.trim();
+              if (name.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter full name')),
+                );
+                return;
+              }
+              if (phone.isNotEmpty && !RegExp(r'^[6-9]\d{9}$').hasMatch(phone)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter a valid 10-digit mobile number')),
+                );
+                return;
+              }
+              if (email.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter a valid email address')),
+                );
+                return;
+              }
               try {
                 await FirebaseFirestore.instance.collection(widget.collectionName).add({
-                  'name': nameCtrl.text.trim(),
-                  'displayName': nameCtrl.text.trim(),
-                  'phone': phoneCtrl.text.trim(),
-                  'phoneNumber': phoneCtrl.text.trim(),
-                  'email': emailCtrl.text.trim(),
+                  'name': name,
+                  'displayName': name,
+                  'phone': phone,
+                  'phoneNumber': phone,
+                  'email': email,
                   'status': 'Active',
                   'createdAt': FieldValue.serverTimestamp(),
                 });
