@@ -16,6 +16,8 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
 
   final List<String> _courierStatuses = [
     'All',
+    'pending_review',
+    'price_set',
     'pending_price',
     'pending_payment',
     'assigned',
@@ -53,9 +55,11 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'new':
+      case 'pending_review':
       case 'pending_price':
         return Colors.orange;
       case 'preparing':
+      case 'price_set':
       case 'pending_payment':
         return Colors.amber.shade800;
       case 'assigned':
@@ -74,6 +78,10 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
 
   String _formatStatusLabel(String status) {
     switch (status.toLowerCase()) {
+      case 'pending_review':
+        return 'Pending Review';
+      case 'price_set':
+        return 'Price Set & Assigned';
       case 'pending_price':
         return 'Pending Price';
       case 'pending_payment':

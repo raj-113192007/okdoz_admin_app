@@ -101182,7 +101182,7 @@ return s.a.uD(s.b,s.c,s.d,s.e)},
 $S:0}
 A.EJ.prototype={
 ag(){var s=t.s
-return new A.a_H(A.b(["All","pending_price","pending_payment","assigned","picked_up","delivered","cancelled"],s),A.b(["All","New","Preparing","Delivered","Cancelled"],s))}}
+return new A.a_H(A.b(["All","pending_review","price_set","pending_price","pending_payment","assigned","picked_up","delivered","cancelled"],s),A.b(["All","New","Preparing","Delivered","Cancelled"],s))}}
 A.a_H.prototype={
 UA(a){var s,r
 if(a==null)return null
@@ -101191,13 +101191,15 @@ if(A.h5(a))if(a>1e12)return new A.da(A.iY(a,0,!1),0,!1)
 else return new A.da(A.iY(a*1000,0,!1),0,!1)
 if(typeof a=="string")try{s=A.a96(a)
 return s}catch(r){}return null},
-SK(a){switch(a.toLowerCase()){case"new":case"pending_price":return B.bc
-case"preparing":case"pending_payment":return B.dJ
+SK(a){switch(a.toLowerCase()){case"new":case"pending_review":case"pending_price":return B.bc
+case"preparing":case"price_set":case"pending_payment":return B.dJ
 case"assigned":case"on the way":case"picked_up":return B.aU
 case"delivered":case"completed":return B.R
 case"cancelled":return B.b4
 default:return B.aY}},
-GG(a){switch(a.toLowerCase()){case"pending_price":return"Pending Price"
+GG(a){switch(a.toLowerCase()){case"pending_review":return"Pending Review"
+case"price_set":return"Price Set & Assigned"
+case"pending_price":return"Pending Price"
 case"pending_payment":return"Payment Pending"
 case"assigned":return"Agent Assigned"
 case"picked_up":return"Picked Up"
