@@ -172,30 +172,47 @@ class _AdminCourierOrdersScreenState extends State<AdminCourierOrdersScreen> wit
                   onPressed: () async {
                     final priceText = priceController.text.trim();
                     if (priceText.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter delivery price')));
+                      ScaffoldMessenger.maybeOf(context)?.showSnackBar(const SnackBar(content: Text('Please enter delivery price')));
                       return;
                     }
                     final double? price = double.tryParse(priceText);
                     if (price == null || price <= 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a valid price')));
+                      ScaffoldMessenger.maybeOf(context)?.showSnackBar(const SnackBar(content: Text('Please enter a valid price')));
                       return;
                     }
 
-                    await _db.collection('courier_orders').doc(orderId).update({
-                      'status': 'price_set',
-                      'delivery_price': price,
-                      'total_amount': price,
-                      'delivery_agent_id': selectedAgent!['id']!,
-                      'delivery_agent_name': selectedAgent!['name']!,
-                      'delivery_agent_phone': selectedAgent!['phone']!,
-                      'updatedAt': FieldValue.serverTimestamp(),
-                    });
+                    try {
+                      final agent = selectedAgent ?? _defaultAgents.first;
+                      final agentName = agent['name'] ?? 'Rider';
+                      final messenger = ScaffoldMessenger.maybeOf(context);
+                      final navigator = Navigator.of(context);
 
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Admin set price ₹$price & assigned ${selectedAgent!['name']}')),
+                      await _db.collection('courier_orders').doc(orderId).update({
+                        'status': 'price_set',
+                        'delivery_price': price,
+                        'total_amount': price,
+                        'delivery_agent_id': agent['id'] ?? '',
+                        'delivery_agent_name': agentName,
+                        'delivery_agent_phone': agent['phone'] ?? '',
+                        'updatedAt': FieldValue.serverTimestamp(),
+                      });
+
+                      if (context.mounted) {
+                        navigator.pop();
+                      }
+                      messenger?.showSnackBar(
+                        SnackBar(
+                          content: Text('Admin set price ₹$price & assigned $agentName'),
+                          backgroundColor: Colors.green,
+                        ),
                       );
+                    } catch (e) {
+                      debugPrint('Error setting courier price: $e');
+                      if (context.mounted) {
+                        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+                          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                        );
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(
