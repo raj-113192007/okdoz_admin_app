@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/dashboard_widgets.dart';
 
 class PartnerCredentialsScreen extends StatefulWidget {
@@ -13,7 +14,6 @@ class _PartnerCredentialsScreenState extends State<PartnerCredentialsScreen> wit
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  final Set<String> _visiblePasswords = {};
 
   // Master Restaurant Partner Directory (Real Bhabua Affiliated Partners)
   final List<Map<String, dynamic>> _restaurantPartners = [
@@ -22,7 +22,6 @@ class _PartnerCredentialsScreenState extends State<PartnerCredentialsScreen> wit
       'name': 'Five Star Restaurant',
       'contact': '9661440600',
       'email': 'fivestar@partner.okdoz.in',
-      'password': 'FiveStar@123',
       'address': 'Akhlaspur Road, Devi Mandir ke Samne, Ward No. 3, Bhabua',
       'landmark': 'Devi Mandir',
       'category': 'Family Restaurant (Mughlai, North Indian)',
@@ -35,7 +34,6 @@ class _PartnerCredentialsScreenState extends State<PartnerCredentialsScreen> wit
       'name': 'CFC & Restaurant',
       'contact': '9470123456',
       'email': 'cfc@partner.okdoz.in',
-      'password': 'CFC@123',
       'address': 'Bhabua-Mohaniya Main Road, Near Bus Stand, Bhabua',
       'landmark': 'Bus Stand',
       'category': 'Crispy Fried Chicken & Restaurant',
@@ -48,7 +46,6 @@ class _PartnerCredentialsScreenState extends State<PartnerCredentialsScreen> wit
       'name': 'Sweet Tooth Cafe & Restaurant',
       'contact': '9122334455',
       'email': 'sweettooth@partner.okdoz.in',
-      'password': 'SweetTooth@123',
       'address': 'Court Road, Near Ekta Chowk, Bhabua',
       'landmark': 'Ekta Chowk',
       'category': 'Cafe, Beverages & Fast Food',
@@ -61,7 +58,6 @@ class _PartnerCredentialsScreenState extends State<PartnerCredentialsScreen> wit
       'name': 'Zorko - Brand of Food Lovers',
       'contact': '9835123456',
       'email': 'zorko@partner.okdoz.in',
-      'password': 'Zorko@123',
       'address': 'Opposite Town High School, Mohania Road, Bhabua',
       'landmark': 'Town High School',
       'category': 'Fast Food, Burgers & Shakes',
@@ -74,7 +70,6 @@ class _PartnerCredentialsScreenState extends State<PartnerCredentialsScreen> wit
       'name': 'Rajdarbar Family Restaurant',
       'contact': '9771245800',
       'email': 'rajdarbar@partner.okdoz.in',
-      'password': 'Rajdarbar@123',
       'address': 'Patel Chowk, Kudra Road, Bhabua',
       'landmark': 'Patel Chowk',
       'category': 'Royal Mughlai & Handi Special',
@@ -87,7 +82,6 @@ class _PartnerCredentialsScreenState extends State<PartnerCredentialsScreen> wit
       'name': 'OneBite Cafe',
       'contact': '7004488123',
       'email': 'onebite@partner.okdoz.in',
-      'password': 'OneBite@123',
       'address': 'Near Collectorate Gate, Bhabua',
       'landmark': 'Collectorate Gate',
       'category': 'Burgers, Wraps & Garlic Breads',
@@ -100,7 +94,6 @@ class _PartnerCredentialsScreenState extends State<PartnerCredentialsScreen> wit
       'name': 'Zaika Restaurant',
       'contact': '8051233445',
       'email': 'zaika@partner.okdoz.in',
-      'password': 'Zaika@123',
       'address': 'Chawni Mohalla, Main Market, Bhabua',
       'landmark': 'Chawni Mohalla',
       'category': 'Mughlai Korma & Tandoori',
@@ -117,7 +110,6 @@ class _PartnerCredentialsScreenState extends State<PartnerCredentialsScreen> wit
       'name': 'Ankit Kumar',
       'contact': '7488087395',
       'email': 'ankit@delivery.okdoz.in',
-      'password': 'Ankit@123',
       'vehicle': 'Hero Splendor (Bike)',
       'vehicleNumber': 'BR-45-7890',
       'serviceArea': 'Bhabua Town & Akhlaspur',
@@ -130,7 +122,6 @@ class _PartnerCredentialsScreenState extends State<PartnerCredentialsScreen> wit
       'name': 'Priyanshu Kumar',
       'contact': '9142070937',
       'email': 'priyanshu@delivery.okdoz.in',
-      'password': 'Priyanshu@123',
       'vehicle': 'Honda Shine (Bike)',
       'vehicleNumber': 'BR-45-3412',
       'serviceArea': 'Bhabua Town, Mohanpur & Ekta Chowk',
@@ -143,7 +134,6 @@ class _PartnerCredentialsScreenState extends State<PartnerCredentialsScreen> wit
       'name': 'Rakesh Kumar',
       'contact': '8210031549',
       'email': 'rakesh@delivery.okdoz.in',
-      'password': 'Rakesh@123',
       'vehicle': 'Bajaj Pulsar (Bike)',
       'vehicleNumber': 'BR-45-9011',
       'serviceArea': 'Bhabua Town, Bus Stand & College Road',
@@ -184,37 +174,69 @@ class _PartnerCredentialsScreenState extends State<PartnerCredentialsScreen> wit
     );
   }
 
+  Future<void> _sendPasswordResetEmail(String email) async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.mark_email_read, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(child: Text('Password reset instructions sent to $email!')),
+              ],
+            ),
+            backgroundColor: Colors.green.shade800,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to trigger reset: $e'),
+            backgroundColor: Colors.red.shade800,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   void _copyFormattedCredentials(Map<String, dynamic> partner, bool isRestaurant) {
     String msg;
     if (isRestaurant) {
-      msg = '''*OK DOZ RESTAURANT PARTNER LOGIN*
+      msg = '''*OK DOZ RESTAURANT PARTNER ONBOARDING*
 ━━━━━━━━━━━━━━━━━━━━━━
 🏪 *Restaurant:* ${partner['name']}
 📞 *Phone / ID:* ${partner['contact']}
 📧 *Email Login:* ${partner['email']}
-🔑 *Password:* ${partner['password']}
 📍 *Address:* ${partner['address']}
 ━━━━━━━━━━━━━━━━━━━━━━
 📲 *Download Partner App:* OK DOZ Partner
+🔐 *Password Setup:* Please use your registered email to log in or use "Forgot Password" in the app to set your password securely.
 _Login karke live orders aur menu manage karein!_''';
     } else {
-      msg = '''*OK DOZ DELIVERY PARTNER LOGIN*
+      msg = '''*OK DOZ DELIVERY PARTNER ONBOARDING*
 ━━━━━━━━━━━━━━━━━━━━━━
 🛵 *Rider Name:* ${partner['name']}
 📞 *Phone / ID:* ${partner['contact']}
 📧 *Email Login:* ${partner['email']}
-🔑 *Password:* ${partner['password']}
 🏍️ *Vehicle:* ${partner['vehicle']} (${partner['vehicleNumber']})
 📍 *Area:* ${partner['serviceArea']}
 ━━━━━━━━━━━━━━━━━━━━━━
 📲 *Download Delivery App:* OK DOZ Delivery
+🔐 *Password Setup:* Please use your registered email to log in or use "Forgot Password" in the app to set your password securely.
 _Login karke live delivery duty start karein!_''';
     }
 
     Clipboard.setData(ClipboardData(text: msg));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('📋 WhatsApp-ready credentials copied! Paste to send to partner.'),
+        content: const Text('📋 WhatsApp-ready partner onboarding info copied!'),
         backgroundColor: const Color(0xFF1E88E5),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 3),
@@ -274,7 +296,7 @@ _Login karke live delivery duty start karein!_''';
                               ),
                               SizedBox(height: 4),
                               Text(
-                                'Instant lookup for Restaurant IDs, Passwords, Addresses & Delivery Boy Accounts',
+                                'Instant lookup for Restaurant IDs, Emails, Addresses & Delivery Boy Accounts',
                                 style: TextStyle(color: Colors.white70, fontSize: 13),
                               ),
                             ],
@@ -401,7 +423,6 @@ _Login karke live delivery duty start karein!_''';
       itemCount: filteredList.length,
       itemBuilder: (context, index) {
         final p = filteredList[index];
-        final isPassVisible = _visiblePasswords.contains(p['id']);
 
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
@@ -547,45 +568,44 @@ _Login karke live delivery duty start karein!_''';
                       ),
                       const SizedBox(height: 6),
 
-                      // Password
+                      // Auth Security Status & Password Reset
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
-                            children: [
-                              const Icon(Icons.lock_outline, size: 15, color: Colors.black54),
-                              const SizedBox(width: 6),
-                              const Text('Password: ', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
-                              SelectableText(
-                                isPassVisible ? p['password'] : '••••••••••••',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFD97706)),
+                            children: const [
+                              Icon(Icons.shield_outlined, size: 15, color: Colors.green),
+                              SizedBox(width: 6),
+                              Text('Security: ', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                              Text(
+                                'Firebase Auth Encrypted',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.green),
                               ),
                             ],
                           ),
-                          Row(
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    if (isPassVisible) {
-                                      _visiblePasswords.remove(p['id']);
-                                    } else {
-                                      _visiblePasswords.add(p['id']);
-                                    }
-                                  });
-                                },
-                                child: Icon(
-                                  isPassVisible ? Icons.visibility_off : Icons.visibility,
-                                  size: 16,
-                                  color: Colors.grey.shade600,
-                                ),
+                          InkWell(
+                            onTap: () => _sendPasswordResetEmail(p['email']),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF6D00).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
                               ),
-                              const SizedBox(width: 8),
-                              InkWell(
-                                onTap: () => _copyToClipboard(p['password'], 'Password'),
-                                child: const Icon(Icons.copy, size: 16, color: Color(0xFFFF6D00)),
+                              child: Row(
+                                children: const [
+                                  Icon(Icons.lock_reset, size: 14, color: Color(0xFFFF6D00)),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Send Reset Link',
+                                    style: TextStyle(
+                                      color: Color(0xFFFF6D00),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
@@ -626,7 +646,6 @@ _Login karke live delivery duty start karein!_''';
       itemCount: filteredList.length,
       itemBuilder: (context, index) {
         final p = filteredList[index];
-        final isPassVisible = _visiblePasswords.contains(p['id']);
 
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
@@ -775,45 +794,44 @@ _Login karke live delivery duty start karein!_''';
                       ),
                       const SizedBox(height: 6),
 
-                      // Password
+                      // Auth Security Status & Password Reset
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
-                            children: [
-                              const Icon(Icons.lock_outline, size: 15, color: Colors.black54),
-                              const SizedBox(width: 6),
-                              const Text('Password: ', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
-                              SelectableText(
-                                isPassVisible ? p['password'] : '••••••••••••',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFD97706)),
+                            children: const [
+                              Icon(Icons.shield_outlined, size: 15, color: Colors.green),
+                              SizedBox(width: 6),
+                              Text('Security: ', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                              Text(
+                                'Firebase Auth Encrypted',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.green),
                               ),
                             ],
                           ),
-                          Row(
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    if (isPassVisible) {
-                                      _visiblePasswords.remove(p['id']);
-                                    } else {
-                                      _visiblePasswords.add(p['id']);
-                                    }
-                                  });
-                                },
-                                child: Icon(
-                                  isPassVisible ? Icons.visibility_off : Icons.visibility,
-                                  size: 16,
-                                  color: Colors.grey.shade600,
-                                ),
+                          InkWell(
+                            onTap: () => _sendPasswordResetEmail(p['email']),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF6D00).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
                               ),
-                              const SizedBox(width: 8),
-                              InkWell(
-                                onTap: () => _copyToClipboard(p['password'], 'Password'),
-                                child: const Icon(Icons.copy, size: 16, color: Color(0xFFFF6D00)),
+                              child: Row(
+                                children: const [
+                                  Icon(Icons.lock_reset, size: 14, color: Color(0xFFFF6D00)),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Send Reset Link',
+                                    style: TextStyle(
+                                      color: Color(0xFFFF6D00),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
