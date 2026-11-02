@@ -456,9 +456,6 @@ void _showUserDetailsDialog(BuildContext context, DocumentSnapshot userDoc, Stri
                         final bData = b.data() as Map<String, dynamic>;
                         final aTime = _parseDate(aData['created_at'] ?? aData['createdAt'] ?? aData['timestamp']);
                         final bTime = _parseDate(bData['created_at'] ?? bData['createdAt'] ?? bData['timestamp']);
-                        if (aTime == null && bTime == null) return 0;
-                        if (aTime == null) return 1;
-                        if (bTime == null) return -1;
                         return bTime.compareTo(aTime);
                       });
 
@@ -470,9 +467,9 @@ void _showUserDetailsDialog(BuildContext context, DocumentSnapshot userDoc, Stri
                           final itemNames = items.map((e) => '${e['qty'] ?? 1}x ${e['name']}').join(', ');
                           
                           final parsedOrderDate = _parseDate(order['created_at'] ?? order['createdAt'] ?? order['timestamp']);
-                          final dateStr = parsedOrderDate != null
-                              ? DateFormat('dd MMM, yyyy - hh:mm a').format(parsedOrderDate)
-                              : 'Unknown';
+                          final dateStr = parsedOrderDate.millisecondsSinceEpoch == 0
+                              ? 'Unknown'
+                              : DateFormat('dd MMM, yyyy - hh:mm a').format(parsedOrderDate);
                           
                           return Card(
                             margin: const EdgeInsets.only(bottom: 8),
